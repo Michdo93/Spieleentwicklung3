@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kapitel 2 · Sprites zeichnen — Ninja Fight von Grund auf</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/css/site.css">
+<link rel="stylesheet" href="chapter.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap">
+    <div class="brand"><span class="dot">&gt;</span> ninja-fight-tutorial <small>HTML5 + Vanilla JS</small></div>
+    <nav class="site-nav">
+      <a href="../../index.html">Alle Kapitel</a>
+      <a href="https://github.com/Michdo93" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<section class="chapter-hero">
+  <div class="wrap">
+    <div class="breadcrumb"><a href="../../index.html">Kapitel</a> / Kapitel 2</div>
+    <span class="readout">KAP·02</span>
+    <h1>Sprites zeichnen</h1>
+    <p class="lede" style="color:var(--text-dim); max-width:70ch;">
+      Bilder laden und mit <code>drawImage()</code> zeichnen — in drei
+      zunehmend nützlichen Varianten. Als Beispiel dient das echte
+      Sprite-Sheet des Helden aus Ninja Fight, nicht ein abstraktes
+      Platzhalterbild.
+    </p>
+  </div>
+</section>
+
+<main class="wrap">
+  <div class="learn-grid">
+
+    <div class="learn-col">
+      <h2>Ein Bild laden</h2>
+      <p>
+        Bilder werden über das <code>Image</code>-Objekt geladen — das
+        Laden passiert asynchron, deshalb prüft man
+        <code>img.complete</code> oder wartet auf das
+        <code>load</code>-Event, bevor man zeichnet.
+      </p>
+      <pre><code>const heroSheet = new Image();
+heroSheet.src = "assets/hero.png";
+
+heroSheet.addEventListener("load", () => {
+  ctx.drawImage(heroSheet, 20, 10);
+});</code></pre>
+
+      <h2>drawImage() in drei Formen</h2>
+      <p>
+        Je mehr Argumente, desto mehr Kontrolle. Alle drei Formen tauchen
+        im fertigen Spiel wieder auf:
+      </p>
+      <div class="compare">
+        <div class="col old">
+          <span class="tag">3 Argumente</span>
+          <pre><code>drawImage(img, x, y)
+// Originalgröße, an
+// Position (x,y)</code></pre>
+        </div>
+        <div class="col new">
+          <span class="tag">5 Argumente</span>
+          <pre><code>drawImage(img,
+  x, y, w, h)
+// skaliert auf w×h</code></pre>
+        </div>
+      </div>
+      <pre><code>// 9 Argumente — nur einen Ausschnitt zeichnen
+drawImage(img,
+  sx, sy, sw, sh,   // Quellrechteck: WO im Bild
+  dx, dy, dw, dh);  // Zielrechteck: WOHIN auf dem Canvas</code></pre>
+      <p>
+        Die 9-Argumente-Form ist die wichtigste für Sprite-Arbeit: Ein
+        Sprite-Sheet ist ein einziges großes Bild mit vielen Postionen
+        (Frames) nebeneinander — <code>sx/sy/sw/sh</code> schneiden genau
+        einen Frame heraus, <code>dx/dy/dw/dh</code> bestimmen, wo und wie
+        groß er auf dem Canvas landet. Kapitel 3 baut genau darauf eine
+        komplette Animation.
+      </p>
+
+      <h2>Skalieren und positionieren</h2>
+      <p>
+        Da Quell- und Zielrechteck unabhängig sind, kann man ein Bild
+        beliebig größer oder kleiner zeichnen, ohne die Bilddatei selbst
+        zu verändern — in Demo 2 verändern zwei Regler nur
+        <code>dx/dw/dh</code>.
+      </p>
+
+      <h2>Blickrichtung spiegeln</h2>
+      <p>
+        Ein Sprite nach links UND rechts zeigen zu lassen, ohne zwei
+        separate Bilder zu brauchen: <code>ctx.scale(-1, 1)</code> vor dem
+        Zeichnen spiegelt horizontal. Wichtig ist die Reihenfolge — erst
+        zur gewünschten Position <code>translate()</code>n, dann
+        <code>scale()</code>n, danach relativ zu <code>(0,0)</code>
+        zeichnen. Das ist exakt die Technik, die
+        <code>drawNinja()</code> in Ninja Fight für die Blickrichtung
+        (<code>facing</code>) jeder Figur benutzt.
+      </p>
+      <pre><code>ctx.save();
+ctx.translate(x, y);       // 1. zur Position
+ctx.scale(facing, 1);      // 2. spiegeln (facing: 1 oder -1)
+ctx.drawImage(img, ..., -w/2, -h, w, h); // 3. relativ zu (0,0)
+ctx.restore();</code></pre>
+
+      <div class="callout">
+        Bei Demo 3 auf "Spiegeln" klicken — dieselbe Figur, dieselbe
+        Bilddatei, nur eine Zeile Code unterscheidet links von rechts.
+      </div>
+    </div>
+
+    <div class="stage-wrap">
+      <div class="demo-buttons">
+        <button class="btn ghost btn-active" data-demo="basics">1 · drawImage()-Formen</button>
+        <button class="btn ghost" data-demo="scale">2 · Skalierung</button>
+        <button class="btn ghost" data-demo="flip">3 · Spiegeln</button>
+      </div>
+      <div class="stage-frame">
+        <canvas id="stage" width="500" height="320"></canvas>
+      </div>
+      <div id="extra-controls">
+        <div id="scale-controls">
+          <label>Größe <input type="range" id="scale-slider" min="20" max="150" value="70"></label>
+          <label>Position <input type="range" id="x-slider" min="0" max="380" value="150"></label>
+        </div>
+        <div id="flip-controls">
+          <button id="flip-btn" class="btn ghost">Spiegeln</button>
+        </div>
+      </div>
+      <p id="hint" class="controls-hint"></p>
+      <div class="stage-caption">
+        <span>02-sprites-zeichnen/chapter.js</span>
+        <span>500×320</span>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<div class="chapter-footer-nav wrap">
+  <a href="../01-canvas-grundlagen/">← Kapitel 1 · Canvas-Grundlagen</a>
+  <a href="../../index.html">Zur Kapitelübersicht →</a>
+</div>
+
+<script src="chapter.js"></script>
+</body>
+</html>

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kapitel 1 · Canvas-Grundlagen & Game-Loop — Ninja Fight von Grund auf</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/css/site.css">
+<link rel="stylesheet" href="chapter.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap">
+    <div class="brand"><span class="dot">&gt;</span> ninja-fight-tutorial <small>HTML5 + Vanilla JS</small></div>
+    <nav class="site-nav">
+      <a href="../../index.html">Alle Kapitel</a>
+      <a href="https://github.com/Michdo93" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<section class="chapter-hero">
+  <div class="wrap">
+    <div class="breadcrumb"><a href="../../index.html">Kapitel</a> / Kapitel 1</div>
+    <span class="readout">KAP·01</span>
+    <h1>Canvas-Grundlagen & Game-Loop</h1>
+    <p class="lede" style="color:var(--text-dim); max-width:70ch;">
+      Der Ausgangspunkt für alles Weitere: ein <code>&lt;canvas&gt;</code>,
+      sein 2D-Zeichenkontext, und die Schleife, die ein Standbild zu einem
+      Spiel macht. Genau diese Loop-Struktur treibt später das komplette
+      Ninja-Fight-Spiel an.
+    </p>
+  </div>
+</section>
+
+<main class="wrap">
+  <div class="learn-grid">
+
+    <div class="learn-col">
+      <h2>Das &lt;canvas&gt;-Element</h2>
+      <p>
+        Ein <code>&lt;canvas&gt;</code> ist erstmal nur eine leere Fläche
+        fester Größe. Um darauf zu zeichnen, braucht man seinen
+        <strong>2D-Zeichenkontext</strong> — ein Objekt mit Methoden wie
+        <code>fillRect()</code>, <code>drawImage()</code> oder
+        <code>arc()</code>.
+      </p>
+      <pre><code>&lt;canvas id="stage" width="480" height="280"&gt;&lt;/canvas&gt;
+
+&lt;script&gt;
+  const canvas = document.getElementById("stage");
+  const ctx = canvas.getContext("2d");
+  ctx.fillStyle = "#5fe0c9";
+  ctx.fillRect(80, 120, 60, 60);
+&lt;/script&gt;</code></pre>
+      <p>
+        Das ist Demo 1: ein einziger Zeichenaufruf. Ohne irgendeinen Loop
+        bleibt das Bild für immer so stehen — es "passiert" nichts mehr.
+      </p>
+
+      <h2>Der naive Loop: ein fester Schritt pro Frame</h2>
+      <p>
+        Um Bewegung zu erzeugen, muss man wiederholt zeichnen —
+        <code>requestAnimationFrame()</code> ruft eine Funktion kurz vor
+        dem nächsten Bildschirm-Refresh auf (meist 60× pro Sekunde). Der
+        naheliegendste Ansatz: bei jedem Aufruf die Position um einen
+        festen Betrag verschieben.
+      </p>
+      <div class="compare">
+        <div class="col old">
+          <span class="tag">Naiv</span>
+          <pre><code>function frame() {
+  x += 2; // fester Schritt
+  draw(x);
+  requestAnimationFrame(frame);
+}</code></pre>
+        </div>
+        <div class="col new">
+          <span class="tag">Das Problem</span>
+          <pre><code>// Bei 60fps: 120px/Sekunde
+// Bei 30fps: nur 60px/Sekunde
+// Bei 144fps: 288px/Sekunde
+// -&gt; Geschwindigkeit hängt vom
+//    Bildschirm ab!</code></pre>
+        </div>
+      </div>
+      <p>
+        Das ist Demo 2 — funktioniert, aber die tatsächliche Geschwindigkeit
+        hängt von der Bildwiederholrate des jeweiligen Geräts ab. Auf einem
+        langsameren Rechner (oder einem Browser-Tab im Hintergrund) würde
+        sich alles quälend langsam bewegen.
+      </p>
+
+      <h2>Der zeitbasierte Loop: die Lösung</h2>
+      <p>
+        <code>requestAnimationFrame()</code> übergibt der Callback-Funktion
+        einen Zeitstempel. Die Differenz zum letzten Aufruf (<code>dt</code>,
+        "delta time", in Sekunden) sagt genau, wie viel Zeit seit dem
+        letzten Frame vergangen ist — Bewegung wird mit dieser Zeit
+        skaliert statt mit einem festen Schritt.
+      </p>
+      <pre><code>let lastTime = 0;
+
+function loop(now) {
+  if (lastTime === 0) lastTime = now;
+  const dt = (now - lastTime) / 1000; // Sekunden
+  lastTime = now;
+
+  x += SPEED * dt; // SPEED in Pixel/Sekunde, nicht Pixel/Frame
+
+  draw(x);
+  requestAnimationFrame(loop);
+}</code></pre>
+      <p>
+        Das ist exakt die Struktur, die <code>GameManager.loop()</code> in
+        Ninja Fight verwendet (dort zusätzlich mit einer Obergrenze für
+        <code>dt</code>, um bei sehr langen Pausen — z. B. einem
+        Tab-Wechsel — keinen riesigen Sprung zu verursachen).
+      </p>
+
+      <div class="callout">
+        Zwischen den drei Demos wechseln und beobachten: Demo 1 steht
+        still, Demo 2 bewegt sich (aber bildratenabhängig), Demo 3 zeigt
+        den tatsächlichen <code>dt</code>-Wert jedes Frames an.
+      </div>
+    </div>
+
+    <div class="stage-wrap">
+      <div class="demo-buttons">
+        <button class="btn ghost btn-active" data-demo="static">1 · Statisch</button>
+        <button class="btn ghost" data-demo="naive">2 · Naiver Loop</button>
+        <button class="btn ghost" data-demo="timed">3 · Zeitbasierter Loop</button>
+      </div>
+      <div class="stage-frame">
+        <canvas id="stage" width="480" height="280"></canvas>
+      </div>
+      <p id="hint" class="controls-hint"></p>
+      <div class="stage-caption">
+        <span>01-canvas-grundlagen/chapter.js</span>
+        <span>480×280</span>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<div class="chapter-footer-nav wrap">
+  <a href="../../index.html">← Zur Kapitelübersicht</a>
+  <a href="../02-sprites-zeichnen/">Weiter: Kapitel 2 · Sprites zeichnen →</a>
+</div>
+
+<script src="chapter.js"></script>
+</body>
+</html>

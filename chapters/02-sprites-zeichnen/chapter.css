@@ -1,0 +1,27 @@
+.demo-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.demo-buttons .btn.ghost.btn-active {
+  border-color: var(--amber);
+  color: var(--amber);
+}
+#hint { margin-top: 10px; }
+
+#extra-controls {
+  display: none;
+  gap: 16px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+#scale-controls, #flip-controls {
+  display: none;
+  gap: 14px;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+#scale-controls input[type="range"] { width: 140px; }
