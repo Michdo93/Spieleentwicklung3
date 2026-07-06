@@ -1,0 +1,67 @@
+.demo-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.demo-buttons .btn.ghost.btn-active {
+  border-color: var(--amber);
+  color: var(--amber);
+}
+#hint { margin-bottom: 14px; }
+
+.panel { display: none; }
+
+.mock-frame {
+  position: relative;
+  width: 100%;
+  height: 220px;
+  background: #12242f;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+}
+.mock-canvas-standin {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(45deg, #123a2a, #123a2a 10px, #0f2e21 10px, #0f2e21 20px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255,255,255,0.4);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+}
+
+.mock-screen {
+  position: absolute;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: linear-gradient(180deg, rgba(5,7,10,0.75), rgba(5,7,10,0.92));
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+}
+.mock-screen.active { display: flex; }
+
+.demo-controls { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+#current-screen-label, #bug-status, #esc-status {
+  margin-top: 10px;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  color: var(--teal);
+}
+
+/* Demo 2: Bug-Reproduktion */
+#mock-game-2 { background: none; }
+#mock-frame-2.bug-active #mock-game-2 {
+  background: linear-gradient(180deg, rgba(5,7,10,0.75), rgba(5,7,10,0.92));
+}
+
+/* Demo 3: Pause-Overlay */
+#mock-frame-3 .mock-screen.mock-pause { display: none; }
+#mock-frame-3.paused .mock-screen.mock-pause { display: flex; }

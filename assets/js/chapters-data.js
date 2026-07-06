@@ -60,7 +60,7 @@ const CHAPTERS = [
     status: "live" },
   { num: 17, slug: "17-menues-zustaende", title: "Menüs & Spielzustände",
     desc: "Start-, Pause-, Einstellungs-, Anleitungs- und Credits-Bildschirm als Zustandsmaschine.",
-    status: "planned" },
+    status: "live" },
   { num: 18, slug: "18-highscores-fortschritt", title: "Highscores & Levelfortschritt",
     desc: "Speichern mit localStorage, Sieg-/Niederlage-Bedingungen, alles zu einem vollständigen Spiel zusammenfügen.",
     status: "planned" },

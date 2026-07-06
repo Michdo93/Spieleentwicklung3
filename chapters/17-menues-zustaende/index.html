@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kapitel 17 · Menüs & Spielzustände — Ninja Fight von Grund auf</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/css/site.css">
+<link rel="stylesheet" href="chapter.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap">
+    <div class="brand"><span class="dot">&gt;</span> ninja-fight-tutorial <small>HTML5 + Vanilla JS</small></div>
+    <nav class="site-nav">
+      <a href="../../index.html">Alle Kapitel</a>
+      <a href="https://github.com/Michdo93" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<section class="chapter-hero">
+  <div class="wrap">
+    <div class="breadcrumb"><a href="../../index.html">Kapitel</a> / Kapitel 17</div>
+    <span class="readout">KAP·17</span>
+    <h1>Menüs & Spielzustände</h1>
+    <p class="lede" style="color:var(--text-dim); max-width:70ch;">
+      Baut <code>ui.showScreen()</code> aus Ninja Fight nach — und zeigt
+      einen echten CSS-Bug aus der Entwicklung: eine gemeinsame
+      Basisklasse verdunkelte versehentlich auch den Spielbildschirm
+      selbst.
+    </p>
+  </div>
+</section>
+
+<main class="wrap">
+  <div class="learn-grid">
+
+    <div class="learn-col">
+      <h2>Mehrere Bildschirme, aber immer nur einer aktiv</h2>
+      <p>
+        Start-Menü, Pause, Einstellungen, Anleitung, Credits, das Spiel
+        selbst — alles sind eigene HTML-Elemente, übereinandergelegt.
+        <code>showScreen(name)</code> entfernt eine "aktiv"-Klasse von
+        allen und setzt sie nur auf den gewünschten:
+      </p>
+      <pre><code>function showScreen(name) {
+  document.querySelectorAll(".screen")
+    .forEach(s => s.classList.remove("active"));
+  document.getElementById("screen-" + name)
+    .classList.add("active");
+}</code></pre>
+      <p>
+        Per CSS ist <code>.screen</code> standardmäßig
+        <code>display: none</code>, <code>.screen.active</code> setzt
+        <code>display: flex</code> — nie sind zwei Bildschirme
+        gleichzeitig sichtbar.
+      </p>
+
+      <h2>Der echte Bug: eine Basisklasse trifft den falschen Bildschirm mit</h2>
+      <p>
+        In Ninja Fight hatte die <code>.screen</code>-Basisklasse einen
+        abdunkelnden Verlauf als Hintergrund — gedacht für die Menü-
+        Bildschirme, damit Text über dem Hintergrundbild lesbar bleibt.
+        Das Problem: <strong>jeder</strong> Bildschirm bekommt diese Klasse,
+        auch <code>#screen-game</code> — der während des Spiels direkt
+        über dem Canvas liegt. Das ganze Spielfeld wirkte dadurch
+        dauerhaft abgedunkelt.
+      </p>
+      <div class="compare">
+        <div class="col old">
+          <span class="tag">Fehlerhaft</span>
+          <pre><code>.screen {
+  background: linear-gradient(
+    dunkel, dunkler);
+}
+/* gilt für ALLE .screen-Elemente,
+   auch #screen-game */</code></pre>
+        </div>
+        <div class="col new">
+          <span class="tag">Korrigiert</span>
+          <pre><code>#screen-game {
+  background: none;
+}
+/* ID-Selektor gewinnt gezielt
+   gegen die Basisklasse */</code></pre>
+        </div>
+      </div>
+      <p>
+        Die Korrektur nutzt aus, dass ein ID-Selektor immer eine höhere
+        Spezifität hat als ein Klassen-Selektor — <code>#screen-game</code>
+        überschreibt <code>.screen</code> zuverlässig, unabhängig davon,
+        welche zusätzlichen Klassen das Element sonst noch trägt.
+      </p>
+
+      <h2>ESC als universeller Pause-Schalter</h2>
+      <p>
+        Ein Tastatur-Listener auf <code>Escape</code> ruft
+        <code>pauseGame()</code>/<code>resumeGame()</code> auf — dieselbe
+        Zustandsmaschine wie bei Button-Klicks, nur über die Tastatur
+        ausgelöst statt über die Maus.
+      </p>
+
+      <div class="callout">
+        Bei Demo 2 auf "Bug umschalten" klicken — das Canvas-Ersatzfeld
+        (grün-braun gestreift) wird plötzlich abgedunkelt, obwohl gar kein
+        Menü-Bildschirm gemeint war.
+      </div>
+    </div>
+
+    <div class="stage-wrap">
+      <div class="demo-buttons">
+        <button class="btn ghost btn-active" data-demo="screens">1 · Bildschirme als Zustandsmaschine</button>
+        <button class="btn ghost" data-demo="bug">2 · Der echte Bug</button>
+        <button class="btn ghost" data-demo="esc">3 · ESC-Taste</button>
+      </div>
+      <p id="hint" class="controls-hint"></p>
+
+      <div id="panel-screens" class="panel">
+        <div id="mock-frame-1" class="mock-frame">
+          <div class="mock-canvas-standin">Spielfeld (Platzhalter)</div>
+          <div id="mock-start" class="mock-screen active"><div>🥷 NINJA FIGHT</div><div>Start-Menü</div></div>
+          <div id="mock-pause" class="mock-screen"><div>⏸ PAUSE</div></div>
+          <div id="mock-settings" class="mock-screen"><div>⚙ EINSTELLUNGEN</div></div>
+        </div>
+        <div class="demo-controls">
+          <button id="btn-screen-start" class="btn ghost">Start-Menü</button>
+          <button id="btn-screen-pause" class="btn ghost">Pause</button>
+          <button id="btn-screen-settings" class="btn ghost">Einstellungen</button>
+        </div>
+        <p id="current-screen-label"></p>
+      </div>
+
+      <div id="panel-bug" class="panel">
+        <div id="mock-frame-2" class="mock-frame">
+          <div class="mock-canvas-standin">Spielfeld (läuft gerade)</div>
+          <div id="mock-game-2" class="mock-screen active"></div>
+        </div>
+        <div class="demo-controls">
+          <button id="btn-toggle-bug" class="btn ghost">Bug umschalten</button>
+        </div>
+        <p id="bug-status">KORRIGIERT: #screen-game background: none überschreibt die Basisklasse gezielt</p>
+      </div>
+
+      <div id="panel-esc" class="panel">
+        <div id="mock-frame-3" class="mock-frame">
+          <div class="mock-canvas-standin">Spielfeld</div>
+          <div class="mock-screen mock-pause"><div>⏸ PAUSIERT</div><button id="btn-resume" class="btn ghost">Weiter</button></div>
+        </div>
+        <div class="demo-controls">
+          <button id="btn-start-game" class="btn ghost">Spiel starten</button>
+        </div>
+        <p id="esc-status">Noch nicht gestartet</p>
+      </div>
+
+      <div class="stage-caption">
+        <span>17-menues-zustaende/chapter.js</span>
+        <span>DOM-Zustandsmaschine</span>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<div class="chapter-footer-nav wrap">
+  <a href="../16-hud/">← Kapitel 16 · HUD & Spielstatus</a>
+  <a href="../../index.html">Zur Kapitelübersicht →</a>
+</div>
+
+<script src="chapter.js"></script>
+</body>
+</html>
