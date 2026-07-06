@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kapitel 16 · HUD & Spielstatus — Ninja Fight von Grund auf</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/css/site.css">
+<link rel="stylesheet" href="chapter.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap">
+    <div class="brand"><span class="dot">&gt;</span> ninja-fight-tutorial <small>HTML5 + Vanilla JS</small></div>
+    <nav class="site-nav">
+      <a href="../../index.html">Alle Kapitel</a>
+      <a href="https://github.com/Michdo93" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<section class="chapter-hero">
+  <div class="wrap">
+    <div class="breadcrumb"><a href="../../index.html">Kapitel</a> / Kapitel 16</div>
+    <span class="readout">KAP·16</span>
+    <h1>HUD & Spielstatus</h1>
+    <p class="lede" style="color:var(--text-dim); max-width:70ch;">
+      Baut <code>drawHealthBar()</code> und <code>ui.updateHud()</code> aus
+      Ninja Fight nach — inklusive einer echten Lektion aus der Praxis:
+      die Balkenposition musste nachträglich korrigiert werden.
+    </p>
+  </div>
+</section>
+
+<main class="wrap">
+  <div class="learn-grid">
+
+    <div class="learn-col">
+      <h2>Ein Lebensbalken ist nur ein gefülltes Rechteck</h2>
+      <p>
+        Kein komplizierter Mechanismus — ein Hintergrundrechteck, darauf
+        ein zweites, dessen Breite proportional zu den verbleibenden HP
+        ist, farblich gestuft:
+      </p>
+      <pre><code>function drawHealthBar(x, y, hp, maxHp) {
+  const pct = hp / maxHp;
+  ctx.fillStyle = "#3a1010";
+  ctx.fillRect(x - 20, y, 40, 5);          // Hintergrund
+  ctx.fillStyle = pct > 0.5 ? "grün" : pct > 0.25 ? "orange" : "rot";
+  ctx.fillRect(x - 20, y, 40 * pct, 5);     // Füllstand
+}</code></pre>
+
+      <h2>Die echte Lektion: Position über dem Kopf, nicht im Kopf</h2>
+      <p>
+        Ein Balken, der "über der Figur" schweben soll, braucht den
+        richtigen Abstand vom Fußpunkt — und dieser Abstand ist bei einem
+        Sprite-basierten Charakter nicht offensichtlich. Das Sprite-Sheet
+        aus Kapitel 3 ist 150px hoch, aber der Kopf beginnt darin erst bei
+        einem Abstand von rund 61px vom unteren Rand (Fußpunkt). Ein zu
+        klein gewählter Abstand (z. B. 40px, wie ursprünglich in Ninja
+        Fight) legt den Balken mitten in den Kopf statt darüber.
+      </p>
+      <p>
+        Die Lehre daraus: bei sprite-basierten Figuren lohnt es sich, den
+        tatsächlichen sichtbaren Bereich des Sprites zu vermessen (zum
+        Beispiel mit den Bounding-Box-Techniken aus Kapitel 2/3), statt
+        einen Abstand zu schätzen.
+      </p>
+
+      <h2>HUD-Text: dieselben Werte, jeden Frame aktuell</h2>
+      <p>
+        Level, Lebenspunkte, Punktestand, verbleibende Zeit — vier einfache
+        Textfelder, die den aktuellen Spielzustand zeigen. Der wichtige
+        Punkt ist nicht die Anzeige selbst, sondern <em>wann</em> sie
+        aktualisiert wird.
+      </p>
+
+      <h2>Warum "jeden Frame aktualisieren" robuster ist</h2>
+      <p>
+        Man könnte das HUD nur an bestimmten Stellen aktualisieren (z. B.
+        nur bei einem Levelwechsel oder nach einem Treffer). Das Problem:
+        jede vergessene Stelle führt zu einem HUD, das kurzzeitig falsche
+        Werte zeigt. Ninja Fight ruft <code>ui.updateHud()</code> deshalb
+        <strong>jeden Frame</strong> im Game-Loop auf — die Kosten dafür
+        sind vernachlässigbar (ein paar Textänderungen), der Gewinn an
+        Zuverlässigkeit dagegen groß.
+      </p>
+
+      <div class="callout">
+        Bei Demo 3 mehrfach "Shuriken benutzen" klicken — die linke Anzeige
+        (nur bei bestimmten Ereignissen aktualisiert) bleibt stehen, die
+        rechte (jeden Frame aktualisiert) zeigt immer den korrekten Wert.
+      </div>
+    </div>
+
+    <div class="stage-wrap">
+      <div class="demo-buttons">
+        <button class="btn ghost btn-active" data-demo="position">1 · Balkenposition</button>
+        <button class="btn ghost" data-demo="text">2 · HUD-Text</button>
+        <button class="btn ghost" data-demo="timing">3 · Wann aktualisieren?</button>
+      </div>
+      <div class="stage-frame">
+        <canvas id="stage" width="420" height="220"></canvas>
+      </div>
+      <div id="position-controls">
+        <label>Abstand vom Fußpunkt <input type="range" id="offset-slider" min="10" max="90" value="40"></label>
+      </div>
+      <div id="hud-demo">
+        <span id="hud-points">Punkte: 0</span>
+        <span id="hud-time">Zeit: 120s</span>
+        <button id="btn-add-point" class="btn ghost">+1 Punkt</button>
+      </div>
+      <div id="timing-controls">
+        <div class="timing-col"><div class="label">nur bei Ereignis</div><div id="hud-stale"></div></div>
+        <div class="timing-col"><div class="label">jeden Frame</div><div id="hud-live"></div></div>
+        <button id="btn-use-shuriken" class="btn ghost">Shuriken benutzen</button>
+      </div>
+      <p id="hint" class="controls-hint"></p>
+      <div class="stage-caption">
+        <span>16-hud/chapter.js</span>
+        <span>420×220</span>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<div class="chapter-footer-nav wrap">
+  <a href="../15-sound-musik/">← Kapitel 15 · Sound & Musik</a>
+  <a href="../../index.html">Zur Kapitelübersicht →</a>
+</div>
+
+<script src="chapter.js"></script>
+</body>
+</html>

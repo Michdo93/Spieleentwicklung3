@@ -57,7 +57,7 @@ const CHAPTERS = [
     status: "live" },
   { num: 16, slug: "16-hud", title: "HUD & Spielstatus",
     desc: "Lebensbalken, Punktestand, Timer — Spielzustand lesbar auf einen Blick.",
-    status: "planned" },
+    status: "live" },
   { num: 17, slug: "17-menues-zustaende", title: "Menüs & Spielzustände",
     desc: "Start-, Pause-, Einstellungs-, Anleitungs- und Credits-Bildschirm als Zustandsmaschine.",
     status: "planned" },

@@ -1,0 +1,41 @@
+.demo-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.demo-buttons .btn.ghost.btn-active {
+  border-color: var(--amber);
+  color: var(--amber);
+}
+#hint { margin-top: 10px; }
+
+#position-controls {
+  display: none;
+  gap: 10px;
+  align-items: center;
+  margin-top: 10px;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+#hud-demo {
+  display: none;
+  gap: 16px;
+  align-items: center;
+  margin-top: 10px;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--amber);
+}
+#timing-controls {
+  display: none;
+  gap: 24px;
+  margin-top: 14px;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+}
+.timing-col { text-align: center; }
+.timing-col .label { color: var(--text-faint); font-size: 0.7rem; text-transform: uppercase; margin-bottom: 6px; }
+#hud-stale { color: var(--red); }
+#hud-live { color: var(--teal); }
