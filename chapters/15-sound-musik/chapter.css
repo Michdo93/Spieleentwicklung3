@@ -1,0 +1,38 @@
+.demo-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.demo-buttons .btn.ghost.btn-active {
+  border-color: var(--amber);
+  color: var(--amber);
+}
+#hint { margin-bottom: 14px; }
+
+.panel {
+  display: none;
+  background: var(--bg-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 20px;
+}
+.panel-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+#music-status, #sfx-count {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  color: var(--teal);
+}
+#volume-value {
+  font-family: var(--font-mono);
+  color: var(--amber);
+  min-width: 3.5em;
+  display: inline-block;
+}
+#volume-slider { width: 200px; }

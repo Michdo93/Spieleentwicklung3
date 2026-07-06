@@ -54,7 +54,7 @@ const CHAPTERS = [
     status: "live" },
   { num: 15, slug: "15-sound-musik", title: "Sound & Musik",
     desc: "Hintergrundmusik, Soundeffekte, Lautstärkeregelung, Umschalten zwischen Menü- und Spielmusik.",
-    status: "planned" },
+    status: "live" },
   { num: 16, slug: "16-hud", title: "HUD & Spielstatus",
     desc: "Lebensbalken, Punktestand, Timer — Spielzustand lesbar auf einen Blick.",
     status: "planned" },

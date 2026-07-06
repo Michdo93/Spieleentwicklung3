@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kapitel 15 · Sound & Musik — Ninja Fight von Grund auf</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/css/site.css">
+<link rel="stylesheet" href="chapter.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap">
+    <div class="brand"><span class="dot">&gt;</span> ninja-fight-tutorial <small>HTML5 + Vanilla JS</small></div>
+    <nav class="site-nav">
+      <a href="../../index.html">Alle Kapitel</a>
+      <a href="https://github.com/Michdo93" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<section class="chapter-hero">
+  <div class="wrap">
+    <div class="breadcrumb"><a href="../../index.html">Kapitel</a> / Kapitel 15</div>
+    <span class="readout">KAP·15</span>
+    <h1>Sound & Musik</h1>
+    <p class="lede" style="color:var(--text-dim); max-width:70ch;">
+      Baut <code>SoundController</code> aus Ninja Fight nach:
+      Hintergrundmusik, die je nach Spielzustand wechselt, kurze
+      Soundeffekte, und eine gemeinsame Lautstärkeregelung für alles
+      zusammen.
+    </p>
+  </div>
+</section>
+
+<main class="wrap">
+  <div class="learn-grid">
+
+    <div class="learn-col">
+      <h2>Musik: Menü und Spiel schließen sich gegenseitig aus</h2>
+      <p>
+        Zwei <code>Audio</code>-Objekte, eines für Menü-Musik, eines für
+        Spiel-Musik — aber nie beide gleichzeitig. Jede
+        <code>play…Music()</code>-Methode stoppt zuerst die jeweils
+        andere:
+      </p>
+      <pre><code>playMenuMusic() {
+  this.gameMusic.pause();
+  this.menuMusic.currentTime = 0;
+  this.menuMusic.play();
+}
+playGameMusic() {
+  this.menuMusic.pause();
+  this.gameMusic.currentTime = 0;
+  this.gameMusic.play();
+}</code></pre>
+      <p>
+        Ohne das <code>pause()</code> der jeweils anderen würden beim
+        Wechsel zwischen Menü und Spiel irgendwann zwei Musikstücke
+        gleichzeitig laufen.
+      </p>
+
+      <h2>Soundeffekte: schnell hintereinander auslösbar</h2>
+      <p>
+        Ein Schwerthieb-Sound soll bei jedem Treffer neu starten — auch
+        wenn der vorige Sound noch nicht zu Ende ist. Der Trick:
+        <code>currentTime</code> vor jedem <code>play()</code> auf 0
+        zurücksetzen.
+      </p>
+      <pre><code>playSword() {
+  this.swordSfx.currentTime = 0; // von vorne beginnen
+  this.swordSfx.play();
+}</code></pre>
+      <p>
+        Ohne das würde ein zweiter Aufruf während des ersten Sounds
+        nichts bewirken (der Sound spielt einfach weiter) oder abhängig
+        vom Browser zu unerwartetem Verhalten führen.
+      </p>
+
+      <h2>Eine gemeinsame Lautstärke für alles</h2>
+      <p>
+        Ein einzelner Regler soll Musik <em>und</em> Soundeffekte
+        gleichzeitig beeinflussen — dafür reicht es, jedem
+        <code>Audio</code>-Objekt denselben Lautstärke-Wert zuzuweisen:
+      </p>
+      <pre><code>changeVolume(v) {
+  this.volume = v;
+  [this.menuMusic, this.gameMusic, this.swordSfx, this.coinsSfx]
+    .forEach(a => a.volume = this.volume);
+}</code></pre>
+      <p>
+        Diese Einstellung greift erst beim <em>nächsten</em>
+        <code>play()</code>-Aufruf für bereits pausierte Sounds, aber
+        sofort für gerade laufende — genau das erwartet man von einem
+        Lautstärkeregler.
+      </p>
+
+      <div class="callout">
+        Bei Demo 1 zwischen Menü- und Spielmusik wechseln — nie läuft
+        beides gleichzeitig. Bei Demo 2 den Schwert-Sound mehrfach schnell
+        hintereinander klicken.
+      </div>
+    </div>
+
+    <div class="stage-wrap">
+      <div class="demo-buttons">
+        <button class="btn ghost btn-active" data-demo="music">1 · Musik wechseln</button>
+        <button class="btn ghost" data-demo="sfx">2 · Soundeffekte</button>
+        <button class="btn ghost" data-demo="volume">3 · Lautstärke</button>
+      </div>
+      <p id="hint" class="controls-hint"></p>
+
+      <div id="panel-music" class="panel">
+        <div class="panel-row">
+          <button id="btn-menu-music" class="btn ghost">Menü-Musik</button>
+          <button id="btn-game-music" class="btn ghost">Spiel-Musik</button>
+          <button id="btn-stop-music" class="btn ghost">Stopp</button>
+        </div>
+        <p id="music-status">Keine Musik läuft</p>
+      </div>
+
+      <div id="panel-sfx" class="panel">
+        <div class="panel-row">
+          <button id="btn-sword-sfx" class="btn ghost">Schwert-Sound</button>
+          <button id="btn-coins-sfx" class="btn ghost">Münzen-Sound</button>
+        </div>
+        <p id="sfx-count"></p>
+      </div>
+
+      <div id="panel-volume" class="panel">
+        <div class="panel-row">
+          <label>Lautstärke <input type="range" id="volume-slider" min="0" max="100" value="60"></label>
+          <span id="volume-value">60%</span>
+        </div>
+        <button id="btn-test-volume" class="btn ghost">Testton abspielen</button>
+      </div>
+
+      <div class="stage-caption">
+        <span>15-sound-musik/chapter.js</span>
+        <span>SoundController</span>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<div class="chapter-footer-nav wrap">
+  <a href="../14-gegner-ki-kampf/">← Kapitel 14 · Gegner-KI: Kampf</a>
+  <a href="../../index.html">Zur Kapitelübersicht →</a>
+</div>
+
+<script src="chapter.js"></script>
+</body>
+</html>
