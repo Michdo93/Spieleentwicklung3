@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kapitel 8 · Hindernisse & Gefahren — Ninja Fight von Grund auf</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/css/site.css">
+<link rel="stylesheet" href="chapter.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap">
+    <div class="brand"><span class="dot">&gt;</span> ninja-fight-tutorial <small>HTML5 + Vanilla JS</small></div>
+    <nav class="site-nav">
+      <a href="../../index.html">Alle Kapitel</a>
+      <a href="https://github.com/Michdo93" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<section class="chapter-hero">
+  <div class="wrap">
+    <div class="breadcrumb"><a href="../../index.html">Kapitel</a> / Kapitel 8</div>
+    <span class="readout">KAP·08</span>
+    <h1>Hindernisse & Gefahren</h1>
+    <p class="lede" style="color:var(--text-dim); max-width:70ch;">
+      Nicht jedes Level-Element ist eine Plattform zum Draufstehen. Dieses
+      Kapitel baut <code>checkHazards()</code> nach — dieselbe Funktion
+      existiert (fast wortgleich) für Held <em>und</em> Gegner in Ninja
+      Fight.
+    </p>
+  </div>
+</section>
+
+<main class="wrap">
+  <div class="learn-grid">
+
+    <div class="learn-col">
+      <h2>Überraschung: Wasser ist keine Gefahr</h2>
+      <p>
+        Man könnte erwarten, dass Wasser gefährlich ist — in Ninja Fight
+        ist <code>WaterGround</code> aber eine ganz normale Plattform
+        (Teil der <code>PLATFORM_TYPES</code>-Menge aus Kapitel 7). Man
+        läuft einfach drüber, wie über Boden. Nicht jedes Level-Element,
+        das anders aussieht, muss auch anders funktionieren.
+      </p>
+
+      <h2>Feuer: Schaden über Zeit, mit Abklingzeit</h2>
+      <p>
+        Feuer ist der interessante Fall: Steht man mitten drin, würde ohne
+        Gegenmaßnahme <strong>jeder einzelne Frame</strong> Schaden
+        anrichten — bei 60fps wären das 60 Treffer pro Sekunde! Die
+        Lösung: ein <code>invulnTimer</code>, der nach einem Treffer eine
+        kurze Sperrzeit setzt.
+      </p>
+      <pre><code>if (invulnTimer <= 0 && berührtFlamme) {
+  hp -= 1;
+  invulnTimer = 0.6; // 0,6 Sekunden Sperre
+}
+if (invulnTimer > 0) invulnTimer -= dt;</code></pre>
+      <p>
+        Das ist exakt der Flame-Teil aus <code>checkHazards()</code> —
+        die Reihenfolge ist wichtig: erst prüfen und ggf. Schaden
+        anrichten, <em>dann</em> den Timer runterzählen (sonst würde der
+        gerade gesetzte Timer im selben Frame schon wieder ablaufen).
+      </p>
+
+      <h2>Stacheln: dieselbe Technik, höherer Schaden</h2>
+      <p>
+        Stacheln benutzen exakt dieselbe Abklingzeit-Logik wie Feuer — nur
+        mit einem höheren Schadenswert (5 statt 1). Wichtig: In dieser
+        Version verlieren auch Gegner nur Lebenspunkte durch Stacheln,
+        statt sofort zu sterben — eine bewusste Design-Entscheidung, keine
+        Notwendigkeit der Technik selbst.
+      </p>
+      <div class="compare">
+        <div class="col old">
+          <span class="tag">Feuer</span>
+          <pre><code>hp -= 1;
+invulnTimer = 0.6;</code></pre>
+        </div>
+        <div class="col new">
+          <span class="tag">Stacheln</span>
+          <pre><code>hp -= 5;
+invulnTimer = 0.6;</code></pre>
+        </div>
+      </div>
+      <p>
+        Derselbe Mechanismus, unterschiedliche Werte — ein gutes Beispiel
+        dafür, wie sich neue Gefahrentypen mit minimalem neuem Code
+        hinzufügen lassen, sobald das Grundmuster einmal steht.
+      </p>
+
+      <div class="callout">
+        Mit den Pfeiltasten in die Flamme bzw. auf die Stacheln laufen und
+        beobachten: der Kreis wird orange, während die Abklingzeit läuft
+        — währenddessen richtet weiteres Stehenbleiben keinen zusätzlichen
+        Schaden an.
+      </div>
+    </div>
+
+    <div class="stage-wrap">
+      <div class="demo-buttons">
+        <button class="btn ghost btn-active" data-demo="water">1 · Wasser (keine Gefahr)</button>
+        <button class="btn ghost" data-demo="flame">2 · Feuer</button>
+        <button class="btn ghost" data-demo="knives">3 · Stacheln</button>
+      </div>
+      <div class="stage-frame">
+        <canvas id="stage" width="480" height="200" tabindex="0"></canvas>
+      </div>
+      <p id="hp-display"></p>
+      <p id="hint" class="controls-hint"></p>
+      <div class="stage-caption">
+        <span>08-hindernisse/chapter.js</span>
+        <span>480×200</span>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<div class="chapter-footer-nav wrap">
+  <a href="../07-level-daten/">← Kapitel 7 · Level-Daten</a>
+  <a href="../09-leitern/">Weiter: Kapitel 9 · Leitern & Klettern →</a>
+</div>
+
+<script src="chapter.js"></script>
+</body>
+</html>

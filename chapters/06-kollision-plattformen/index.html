@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kapitel 6 · Kollision & Plattformen — Ninja Fight von Grund auf</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/css/site.css">
+<link rel="stylesheet" href="chapter.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap">
+    <div class="brand"><span class="dot">&gt;</span> ninja-fight-tutorial <small>HTML5 + Vanilla JS</small></div>
+    <nav class="site-nav">
+      <a href="../../index.html">Alle Kapitel</a>
+      <a href="https://github.com/Michdo93" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<section class="chapter-hero">
+  <div class="wrap">
+    <div class="breadcrumb"><a href="../../index.html">Kapitel</a> / Kapitel 6</div>
+    <span class="readout">KAP·06</span>
+    <h1>Kollision & Plattformen</h1>
+    <p class="lede" style="color:var(--text-dim); max-width:70ch;">
+      Kapitel 5 ist gegen einen fest einprogrammierten Bodenwert gesprungen.
+      Ein echtes Level braucht mehrere Plattformen an unterschiedlichen
+      Stellen — dieses Kapitel baut dafür exakt <code>findLanding()</code>
+      aus Ninja Fight nach.
+    </p>
+  </div>
+</section>
+
+<main class="wrap">
+  <div class="learn-grid">
+
+    <div class="learn-col">
+      <h2>AABB: der einfachste Kollisionstest</h2>
+      <p>
+        "AABB" steht für <em>Axis-Aligned Bounding Box</em> — ein
+        Rechteck, das nicht gedreht ist. Zwei solche Rechtecke überlappen
+        sich genau dann, wenn sie sich auf <strong>beiden</strong> Achsen
+        gleichzeitig überschneiden:
+      </p>
+      <pre><code>function overlaps(a, b) {
+  return a.left &lt; b.right && a.right &gt; b.left
+      && a.top &lt; b.bottom && a.bottom &gt; b.top;
+}</code></pre>
+      <p>
+        Das ist <code>overlaps()</code>/<code>rectOf()</code> aus
+        <code>render.js</code> — dieselben zwei Funktionen prüfen im
+        fertigen Spiel Schwert-Treffer, Projektil-Treffer und
+        Gefahren-Kontakt. Ein einziger Test, überall wiederverwendet.
+      </p>
+
+      <h2>Landung: mehr als nur "überlappt gerade"</h2>
+      <p>
+        Für eine Plattform reicht "überlappt" allein nicht — sonst würde
+        man auch von <em>unten</em> gegen die Plattform "landen". Man
+        braucht zusätzlich: war die Figur im letzten Frame noch
+        <strong>über</strong> der Plattform, und bewegt sie sich gerade
+        <strong>nach unten</strong> (nicht nach oben)?
+      </p>
+      <pre><code>function findLanding(nextY) {
+  if (x > plattform.x && x < plattform.x + plattform.w  // horizontal drüber
+      && y <= plattform.y + 2                              // eben noch drüber
+      && nextY >= plattform.y) {                            // jetzt (fast) drauf
+    return { y: plattform.y };
+  }
+  return null;
+}</code></pre>
+      <p>
+        Das ist wortwörtlich <code>Hero.findLanding()</code> (und
+        <code>Enemy.findLanding()</code>, identisch) aus Ninja Fight. Die
+        Bedingung <code>y &lt;= plattform.y + 2</code> ist der Trick: sie
+        stellt sicher, dass die Landung nur von oben erkannt wird.
+      </p>
+
+      <h2>Mehrere Plattformen: derselbe Test, in einer Schleife</h2>
+      <p>
+        Mit mehr als einer Plattform prüft man einfach jede einzelne und
+        merkt sich die <strong>höchste</strong> (kleinster Y-Wert) unter
+        den passenden — für den Fall, dass sich zwei Plattformen
+        überlappen könnten.
+      </p>
+
+      <h2>Trefferbox ≠ Sprite</h2>
+      <p>
+        Wichtiges, oft übersehenes Detail: die für Kollision genutzte
+        Box ist in Ninja Fight <strong>kleiner</strong> als das gezeichnete
+        Sprite (<code>Hero.width = 24</code>, aber das Sprite wirkt
+        deutlich breiter). Das fühlt sich beim Spielen fairer an — kleine
+        Ungenauigkeiten beim Antippen einer Kante wirken dadurch nicht wie
+        ein Bug.
+      </p>
+
+      <div class="callout">
+        Bei Demo 3 mit den Pfeiltasten über die drei Plattformen laufen
+        und springen — die gestrichelte Box ist die tatsächliche
+        Trefferbox, deutlich kleiner als der gezeichnete Kreis.
+      </div>
+    </div>
+
+    <div class="stage-wrap">
+      <div class="demo-buttons">
+        <button class="btn ghost btn-active" data-demo="aabb">1 · AABB-Kollision</button>
+        <button class="btn ghost" data-demo="landing">2 · Landung</button>
+        <button class="btn ghost" data-demo="multi">3 · Mehrere Plattformen</button>
+      </div>
+      <div class="stage-frame">
+        <canvas id="stage" width="500" height="260" tabindex="0"></canvas>
+      </div>
+      <p id="hint" class="controls-hint"></p>
+      <div class="stage-caption">
+        <span>06-kollision-plattformen/chapter.js</span>
+        <span>500×260</span>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<div class="chapter-footer-nav wrap">
+  <a href="../05-bewegung-schwerkraft/">← Kapitel 5 · Bewegung & Schwerkraft</a>
+  <a href="../07-level-daten/">Weiter: Kapitel 7 · Level-Daten →</a>
+</div>
+
+<script src="chapter.js"></script>
+</body>
+</html>

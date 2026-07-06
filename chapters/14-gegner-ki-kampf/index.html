@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kapitel 14 · Gegner-KI: Kampf & Gegnertypen — Ninja Fight von Grund auf</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/css/site.css">
+<link rel="stylesheet" href="chapter.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap">
+    <div class="brand"><span class="dot">&gt;</span> ninja-fight-tutorial <small>HTML5 + Vanilla JS</small></div>
+    <nav class="site-nav">
+      <a href="../../index.html">Alle Kapitel</a>
+      <a href="https://github.com/Michdo93" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<section class="chapter-hero">
+  <div class="wrap">
+    <div class="breadcrumb"><a href="../../index.html">Kapitel</a> / Kapitel 14</div>
+    <span class="readout">KAP·14</span>
+    <h1>Gegner-KI: Kampf & Gegnertypen</h1>
+    <p class="lede" style="color:var(--text-dim); max-width:70ch;">
+      Bewegung (Kapitel 13) allein macht noch keinen Gegner gefährlich.
+      Dieses Kapitel baut die Angriffsentscheidung aus
+      <code>Enemy.update()</code> nach: je nach Abstand ein anderer
+      Angriff, je nach Gegnertyp überhaupt erst verfügbar.
+    </p>
+  </div>
+</section>
+
+<main class="wrap">
+  <div class="learn-grid">
+
+    <div class="learn-col">
+      <h2>Angriffsauswahl nach Abstand</h2>
+      <p>
+        Ein Gegner entscheidet jeden Frame neu, was er tun soll — abhängig
+        vom Abstand zum Ziel und von seinen eigenen Fähigkeiten:
+      </p>
+      <pre><code>const dist = Math.hypot(hero.x - x, hero.y - y);
+
+if (dist < 40) {
+  // Nahkampf: Schlag oder Tritt
+} else if (dist < 260 && hasShuriken) {
+  // Shuriken werfen
+} else if (dist < 60 && hasSword) {
+  // Schwerthieb
+}</code></pre>
+      <p>
+        Die Reihenfolge der Prüfungen ist wichtig: Nahkampf hat Vorrang
+        vor Fernkampf, weil er (in Ninja Fight) den geringsten Abstand
+        voraussetzt — ein Gegner, der nah genug für einen Schlag ist,
+        würde sonst unnötig ein Shuriken werfen.
+      </p>
+
+      <h2>Vier Gegnertypen, vier Fähigkeitsprofile</h2>
+      <p>
+        Nicht jeder Gegner kann alles. In Ninja Fight sind Fähigkeiten
+        und Lebenspunkte an den Typ gekoppelt:
+      </p>
+      <table style="width:100%; font-family: var(--font-mono); font-size:0.85rem; color: var(--text-dim); border-collapse: collapse; margin: 12px 0;">
+        <tr style="border-bottom:1px solid var(--line);"><th style="text-align:left; padding:6px 0;">Typ</th><th>HP</th><th>Shuriken</th><th>Schwert</th></tr>
+        <tr><td style="padding:4px 0;">Blue</td><td>10</td><td>—</td><td>—</td></tr>
+        <tr><td style="padding:4px 0;">Green</td><td>20</td><td>✓</td><td>—</td></tr>
+        <tr><td style="padding:4px 0;">Red</td><td>30</td><td>—</td><td>✓</td></tr>
+        <tr><td style="padding:4px 0;">White</td><td>50</td><td>✓</td><td>✓</td></tr>
+      </table>
+      <p>
+        Schlagen und Treten kann jeder — Shuriken und Schwert sind
+        exklusive Spezialfähigkeiten. Ein Gegner ohne <code>hasShuriken</code>
+        erreicht die entsprechende <code>if</code>-Bedingung im
+        Entscheidungsbaum oben schlicht nie.
+      </p>
+
+      <h2>Friendly Fire: ein Angriff kennt keine Teams</h2>
+      <p>
+        Ein wichtiges Detail aus Kapitel 11: ein Projektil trifft
+        <strong>jeden außer seinem eigenen Werfer</strong>. Das bedeutet,
+        ein Shuriken, das ein Gegner in Richtung des Helden wirft, kann
+        versehentlich einen anderen Gegner treffen, der zufällig im Weg
+        steht — es gibt keinen Sonderfall-Code, der "Gegner gegen Gegner"
+        ausschließt.
+      </p>
+
+      <div class="callout">
+        Bei Demo 3 werfen und beobachten: das Shuriken ist eigentlich für
+        den Helden gedacht, trifft aber den zufällig dazwischenstehenden
+        anderen Gegner.
+      </div>
+    </div>
+
+    <div class="stage-wrap">
+      <div class="demo-buttons">
+        <button class="btn ghost btn-active" data-demo="aggro">1 · Aggro-Bereich</button>
+        <button class="btn ghost" data-demo="types">2 · Gegnertypen</button>
+        <button class="btn ghost" data-demo="friendlyfire">3 · Friendly Fire</button>
+      </div>
+      <div class="stage-frame">
+        <canvas id="stage" width="500" height="240"></canvas>
+      </div>
+      <div id="ff-controls">
+        <button id="btn-throw" class="btn ghost">Shuriken werfen</button>
+        <button id="reset-btn" class="btn ghost">HP zurücksetzen</button>
+      </div>
+      <p id="hint" class="controls-hint"></p>
+      <div class="stage-caption">
+        <span>14-gegner-ki-kampf/chapter.js</span>
+        <span>500×240</span>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<div class="chapter-footer-nav wrap">
+  <a href="../13-gegner-ki-bewegung/">← Kapitel 13 · Gegner-KI: Bewegung</a>
+  <a href="../../index.html">Zur Kapitelübersicht →</a>
+</div>
+
+<script src="chapter.js"></script>
+</body>
+</html>

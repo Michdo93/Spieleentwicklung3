@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kapitel 11 · Fernkampf & Projektile — Ninja Fight von Grund auf</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/css/site.css">
+<link rel="stylesheet" href="chapter.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap">
+    <div class="brand"><span class="dot">&gt;</span> ninja-fight-tutorial <small>HTML5 + Vanilla JS</small></div>
+    <nav class="site-nav">
+      <a href="../../index.html">Alle Kapitel</a>
+      <a href="https://github.com/Michdo93" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<section class="chapter-hero">
+  <div class="wrap">
+    <div class="breadcrumb"><a href="../../index.html">Kapitel</a> / Kapitel 11</div>
+    <span class="readout">KAP·11</span>
+    <h1>Fernkampf & Projektile</h1>
+    <p class="lede" style="color:var(--text-dim); max-width:70ch;">
+      Eine der dokumentierten Lücken im Original-Ninja-Fight: die
+      Shuriken-Wurfanimation lief, aber es wurde nie ein tatsächliches
+      Objekt erzeugt, das sich durch den Raum bewegt. Dieses Kapitel zeigt
+      das Problem — und die Lösung.
+    </p>
+  </div>
+</section>
+
+<main class="wrap">
+  <div class="learn-grid">
+
+    <div class="learn-col">
+      <h2>Das Original-Problem: Animation ist nicht dasselbe wie ein Objekt</h2>
+      <p>
+        Ein naheliegender, aber trügerischer Ansatz: eine
+        "Werfen"-Animation abspielen (Arm bewegt sich nach vorne) und
+        denken, das <em>sei</em> der Wurf. Tatsächlich bewegt sich dabei
+        gar nichts durch den Raum — die Animation zeigt nur eine Pose,
+        kein Shuriken existiert als eigenständiges Ding, das man treffen
+        oder verfehlen könnte.
+      </p>
+      <p>
+        Genau das war der reale Zustand im Original-Ninja-Fight
+        (dokumentiert im "Known Bugs"-Dokument): <code>doAction("Throw")</code>
+        lief, aber nirgends im Code stand <code>new Shuriken(...)</code>.
+      </p>
+
+      <h2>Die Lösung: ein eigenständiges Objekt</h2>
+      <p>
+        Ein Projektil braucht seine eigene Position, seine eigene
+        Geschwindigkeit, und eine eigene <code>update()</code>-Methode —
+        unabhängig von der Figur, die es geworfen hat. Sobald es
+        existiert, kümmert es sich <em>selbst</em> um seine Bewegung:
+      </p>
+      <pre><code>class Projectile {
+  constructor(x, y, dir) {
+    this.x = x; this.y = y; this.dir = dir;
+    this.speed = 480;
+  }
+  update(dt) {
+    this.x += this.dir * this.speed * dt;
+    if (this.x < -20 || this.x > STAGE_W + 20) {
+      this.dead = true; // außerhalb der Bühne -> entfernen
+    }
+  }
+}</code></pre>
+      <p>
+        Der Werf-Vorgang selbst wird dadurch simpel: die Angriffsanimation
+        starten <em>und zusätzlich</em> ein neues Projektil-Objekt der
+        Liste aller aktiven Projektile hinzufügen. Zwei getrennte Dinge,
+        keine Vermischung.
+      </p>
+
+      <h2>Kollision: den eigenen Werfer ausschließen</h2>
+      <p>
+        Ein Projektil sollte nicht die Figur treffen, die es geworfen hat.
+        In Ninja Fight speichert jedes Projektil eine Referenz auf seinen
+        Werfer (<code>this.owner</code>) und prüft beim Kollisionstest
+        alle <strong>anderen</strong> Figuren — das macht später sogar
+        Friendly Fire zwischen mehreren Gegnern möglich, ohne
+        Sonderfall-Code.
+      </p>
+      <pre><code>update(dt, alleFiguren) {
+  this.x += this.dir * this.speed * dt;
+  for (const figur of alleFiguren) {
+    if (figur === this.owner) continue; // eigenen Werfer überspringen
+    if (überlappt(figur, this)) {
+      figur.takeDamage(SCHADEN);
+      this.dead = true;
+    }
+  }
+}</code></pre>
+
+      <div class="callout">
+        Bei Demo 1 werfen und beobachten: nichts fliegt, nur eine
+        Armbewegung. Bei Demo 2/3 entsteht ein tatsächliches Shuriken, das
+        sich bewegt und (Demo 3) auch trifft.
+      </div>
+    </div>
+
+    <div class="stage-wrap">
+      <div class="demo-buttons">
+        <button class="btn ghost btn-active" data-demo="animonly">1 · Nur Animation (Bug)</button>
+        <button class="btn ghost" data-demo="object">2 · Echtes Objekt</button>
+        <button class="btn ghost" data-demo="collision">3 · Kollision</button>
+      </div>
+      <div class="stage-frame">
+        <canvas id="stage" width="480" height="220"></canvas>
+      </div>
+      <div id="throw-controls"><button id="btn-throw" class="btn ghost">Werfen (nur Animation)</button></div>
+      <div id="throw-controls2"><button id="btn-throw2" class="btn ghost">Werfen</button></div>
+      <div id="throw-controls3">
+        <button id="btn-throw3" class="btn ghost">Werfen</button>
+        <button id="reset-btn3" class="btn ghost">HP zurücksetzen</button>
+      </div>
+      <p id="hint" class="controls-hint"></p>
+      <div class="stage-caption">
+        <span>11-fernkampf/chapter.js</span>
+        <span>480×220</span>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<div class="chapter-footer-nav wrap">
+  <a href="../10-nahkampf/">← Kapitel 10 · Nahkampf</a>
+  <a href="../12-items-powerups/">Weiter: Kapitel 12 · Items & Power-Ups →</a>
+</div>
+
+<script src="chapter.js"></script>
+</body>
+</html>

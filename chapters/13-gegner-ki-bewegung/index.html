@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kapitel 13 · Gegner-KI: Bewegung — Ninja Fight von Grund auf</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/css/site.css">
+<link rel="stylesheet" href="chapter.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap">
+    <div class="brand"><span class="dot">&gt;</span> ninja-fight-tutorial <small>HTML5 + Vanilla JS</small></div>
+    <nav class="site-nav">
+      <a href="../../index.html">Alle Kapitel</a>
+      <a href="https://github.com/Michdo93" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<section class="chapter-hero">
+  <div class="wrap">
+    <div class="breadcrumb"><a href="../../index.html">Kapitel</a> / Kapitel 13</div>
+    <span class="readout">KAP·13</span>
+    <h1>Gegner-KI: Bewegung</h1>
+    <p class="lede" style="color:var(--text-dim); max-width:70ch;">
+      Das Original-Ninja-Fight hatte für Gegner überhaupt keine KI — die
+      Controller-Klassen waren leere Rümpfe. Die hier aufgebaute
+      Patrouillenlogik mit Kantenerkennung war eine der Nacharbeiten, die
+      erst beim tatsächlichen Testen des fertigen Spiels nötig wurden.
+    </p>
+  </div>
+</section>
+
+<main class="wrap">
+  <div class="learn-grid">
+
+    <div class="learn-col">
+      <h2>Der naheliegende erste Versuch: feste Grenzen</h2>
+      <p>
+        Ein Gegner soll patrouillieren — der einfachste Ansatz: zwischen
+        zwei festen X-Koordinaten hin und her laufen.
+      </p>
+      <pre><code>x += facing * SPEED * dt;
+if (x <= patrolLeft)  { x = patrolLeft;  facing = 1; }
+if (x >= patrolRight) { x = patrolRight; facing = -1; }</code></pre>
+      <p>
+        Das Problem: diese Grenzen wissen nichts von der tatsächlichen
+        Plattform. Ist die Plattform kürzer als der Patrouillenbereich
+        (oder steht der Gegner auf einer schmalen Plattform, die er selbst
+        nie vermessen hat), läuft er einfach über die Kante. Genau das
+        ist beim ersten Testen von Ninja Fight passiert — Gegner fielen
+        viel zu oft von Plattformen herunter.
+      </p>
+
+      <h2>Die Lösung: vor jedem Schritt nach vorne schauen</h2>
+      <p>
+        Statt sich auf feste Grenzen zu verlassen, prüft der Gegner vor
+        jeder Bewegung: <em>ist ein Stück voraus (in Bewegungsrichtung)
+        überhaupt noch Boden?</em> Ist die Antwort nein, dreht er um,
+        statt weiterzulaufen.
+      </p>
+      <pre><code>function hasSupportAhead(lookAhead) {
+  const aheadX = x + facing * lookAhead;
+  return aheadX > plattform.x - 4
+      && aheadX < plattform.x + plattform.w + 4;
+}
+
+if (!hasSupportAhead(26)) facing *= -1; // Kante! umdrehen
+else x += facing * SPEED * dt;</code></pre>
+      <p>
+        Das ist wortwörtlich <code>Enemy.hasSupportAhead()</code> aus
+        Ninja Fight. Der Clou: der Gegner braucht keine im Voraus
+        festgelegten Patrouillengrenzen mehr — er erkennt die Kante der
+        tatsächlichen Plattform von selbst, egal wie lang sie ist.
+      </p>
+
+      <h2>Springen, ohne die Kantenerkennung zu verlieren</h2>
+      <p>
+        Für ein lebendigeres Verhalten kann ein Gegner gelegentlich
+        zufällig springen — aber nur, wenn <code>hasSupportAhead()</code>
+        gerade "ja" sagt. Sonst würde ein zufälliger Sprung genau in dem
+        Moment ausgelöst werden können, in dem der Gegner eigentlich
+        gerade umdrehen sollte, und ihn doch über die Kante befördern.
+      </p>
+
+      <div class="callout">
+        Bei Demo 1 zusehen, wie der Gegner blind über die (kürzere)
+        Plattform hinausläuft und fällt. Bei Demo 2/3 bleibt er zuverlässig
+        auf der Plattform, egal wie lang sie ist.
+      </div>
+    </div>
+
+    <div class="stage-wrap">
+      <div class="demo-buttons">
+        <button class="btn ghost btn-active" data-demo="naive">1 · Naive Patrouille</button>
+        <button class="btn ghost" data-demo="edge">2 · Kantenerkennung</button>
+        <button class="btn ghost" data-demo="jump">3 · Plus Springen</button>
+      </div>
+      <div class="stage-frame">
+        <canvas id="stage" width="340" height="220"></canvas>
+      </div>
+      <p id="hint" class="controls-hint"></p>
+      <div class="stage-caption">
+        <span>13-gegner-ki-bewegung/chapter.js</span>
+        <span>340×220</span>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<div class="chapter-footer-nav wrap">
+  <a href="../12-items-powerups/">← Kapitel 12 · Items & Power-Ups</a>
+  <a href="../14-gegner-ki-kampf/">Weiter: Kapitel 14 · Gegner-KI: Kampf →</a>
+</div>
+
+<script src="chapter.js"></script>
+</body>
+</html>

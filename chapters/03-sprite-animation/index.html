@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kapitel 3 · Sprite-Animation — Ninja Fight von Grund auf</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/css/site.css">
+<link rel="stylesheet" href="chapter.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap">
+    <div class="brand"><span class="dot">&gt;</span> ninja-fight-tutorial <small>HTML5 + Vanilla JS</small></div>
+    <nav class="site-nav">
+      <a href="../../index.html">Alle Kapitel</a>
+      <a href="https://github.com/Michdo93" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<section class="chapter-hero">
+  <div class="wrap">
+    <div class="breadcrumb"><a href="../../index.html">Kapitel</a> / Kapitel 3</div>
+    <span class="readout">KAP·03</span>
+    <h1>Sprite-Animation</h1>
+    <p class="lede" style="color:var(--text-dim); max-width:70ch;">
+      Ein einzelner Frame ist nur eine Pose. Eine Animation ist nichts
+      weiter als: mehrere Poses schnell genug nacheinander zeigen. Dieses
+      Kapitel baut Schritt für Schritt die Logik auf, die
+      <code>drawNinja()</code> in Ninja Fight tatsächlich verwendet.
+    </p>
+  </div>
+</section>
+
+<main class="wrap">
+  <div class="learn-grid">
+
+    <div class="learn-col">
+      <h2>Ein Sprite-Sheet ist eine Tabelle aus Posen</h2>
+      <p>
+        Das Helden-Sheet aus Kapitel 2 ist in Wirklichkeit ein Raster: 8
+        Spalten (Frames), 8 Zeilen (Zustände wie Idle, Walk, Jump, …). Jede
+        Zelle ist 160×150 Pixel groß. Um "Frame 3 vom Zustand Walk" zu
+        zeichnen, muss man nur die richtige Zelle ausschneiden — genau die
+        9-Argumente-Form von <code>drawImage()</code> aus Kapitel 2.
+      </p>
+      <pre><code>const STATES = {
+  Idle: { row: 0, count: 8 },
+  Walk: { row: 1, count: 8 },
+  Jump: { row: 2, count: 8 },
+};
+
+function drawFrame(state, frame, x, y) {
+  const def = STATES[state];
+  const sx = frame * CELL_W;
+  const sy = def.row * CELL_H;
+  ctx.drawImage(sheet, sx, sy, CELL_W, CELL_H, x, y, CELL_W, CELL_H);
+}</code></pre>
+      <p>
+        Demo 1 zeigt das in Reinform: von Hand durch die 8 Frames der
+        Walk-Animation klicken. Keine Automatik — nur das Prinzip.
+      </p>
+
+      <h2>Automatische Wiedergabe: Zeit statt Klicks</h2>
+      <p>
+        Statt zu klicken, berechnet man den Frame aus der verstrichenen
+        Zeit — dieselbe <code>dt</code>-Technik aus Kapitel 1, nur diesmal
+        für die Bildauswahl statt für Bewegung:
+      </p>
+      <pre><code>let frame = Math.floor(t * fps) % anzahlFrames;</code></pre>
+      <p>
+        <code>t</code> ist die Gesamtzeit seit Animationsstart in Sekunden,
+        <code>fps</code> die gewünschte Abspielgeschwindigkeit (Frames pro
+        Sekunde — <strong>nicht</strong> zu verwechseln mit der Bildrate des
+        Bildschirms). Bei <code>fps=12</code> und 8 Frames dauert ein
+        kompletter Zyklus <code>8/12 ≈ 0,67</code> Sekunden. Genau diese
+        Formel steht (nahezu wortgleich) in <code>drawNinja()</code>.
+      </p>
+
+      <h2>Mehrere Zustände: Loop vs. einmalig</h2>
+      <p>
+        Nicht jede Animation soll sich wiederholen. Idle und Walk laufen
+        endlos — ein Sprung dagegen soll einmal durchlaufen und am letzten
+        Frame (in der Luft) stehen bleiben, bis die Landung eine andere
+        Animation auslöst.
+      </p>
+      <div class="compare">
+        <div class="col old">
+          <span class="tag">Endlosschleife (Idle/Walk)</span>
+          <pre><code>frame = Math.floor(t*fps)
+  % count;</code></pre>
+        </div>
+        <div class="col new">
+          <span class="tag">Einmalig (Jump)</span>
+          <pre><code>frame = Math.min(
+  Math.floor(t*fps),
+  count - 1);</code></pre>
+        </div>
+      </div>
+      <p>
+        <code>% count</code> lässt den Frame-Index bei Erreichen des Endes
+        wieder bei 0 anfangen — <code>Math.min(..., count-1)</code> dagegen
+        "klemmt" ihn am letzten gültigen Frame fest. In Ninja Fight
+        entscheidet ein einfaches <code>Set</code> aus Zustandsnamen
+        (<code>loopStates</code>), welche der beiden Formeln gerade gilt.
+      </p>
+
+      <div class="callout">
+        Bei Demo 3 zwischen Idle/Walk/Jump wechseln — Idle und Walk laufen
+        weiter, Jump bleibt nach einem Durchlauf am letzten Frame stehen.
+      </div>
+    </div>
+
+    <div class="stage-wrap">
+      <div class="demo-buttons">
+        <button class="btn ghost btn-active" data-demo="manual">1 · Von Hand</button>
+        <button class="btn ghost" data-demo="auto">2 · Automatisch (Zeit)</button>
+        <button class="btn ghost" data-demo="states">3 · Mehrere Zustände</button>
+      </div>
+      <div class="stage-frame">
+        <canvas id="stage" width="500" height="220"></canvas>
+      </div>
+      <div id="extra-controls">
+        <div id="manual-controls">
+          <button id="btn-prev" class="btn ghost">← Vorheriger Frame</button>
+          <button id="btn-next" class="btn ghost">Nächster Frame →</button>
+        </div>
+        <div id="auto-controls">
+          <label>fps <input type="range" id="fps-slider" min="1" max="30" value="12"></label>
+        </div>
+        <div id="state-controls">
+          <button id="btn-state-idle" class="btn ghost">Idle</button>
+          <button id="btn-state-walk" class="btn ghost">Walk</button>
+          <button id="btn-state-jump" class="btn ghost">Jump</button>
+        </div>
+      </div>
+      <p id="hint" class="controls-hint"></p>
+      <div class="stage-caption">
+        <span>03-sprite-animation/chapter.js</span>
+        <span>500×220</span>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<div class="chapter-footer-nav wrap">
+  <a href="../02-sprites-zeichnen/">← Kapitel 2 · Sprites zeichnen</a>
+  <a href="../04-eingabe/">Weiter: Kapitel 4 · Eingabe →</a>
+</div>
+
+<script src="chapter.js"></script>
+</body>
+</html>

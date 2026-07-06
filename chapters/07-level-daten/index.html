@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kapitel 7 · Level-Daten & Tile-Rendering — Ninja Fight von Grund auf</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/css/site.css">
+<link rel="stylesheet" href="chapter.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap">
+    <div class="brand"><span class="dot">&gt;</span> ninja-fight-tutorial <small>HTML5 + Vanilla JS</small></div>
+    <nav class="site-nav">
+      <a href="../../index.html">Alle Kapitel</a>
+      <a href="https://github.com/Michdo93" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<section class="chapter-hero">
+  <div class="wrap">
+    <div class="breadcrumb"><a href="../../index.html">Kapitel</a> / Kapitel 7</div>
+    <span class="readout">KAP·07</span>
+    <h1>Level-Daten & Tile-Rendering</h1>
+    <p class="lede" style="color:var(--text-dim); max-width:70ch;">
+      Kapitel 6 hat Plattformen direkt im Code definiert. Das reicht für
+      eine Demo, aber nicht für ein Spiel mit vielen Leveln. Dieses
+      Kapitel trennt "was steht wo" (Daten) von "was bedeutet das" (Code)
+      — exakt wie <code>levels.js</code> und <code>buildLevel()</code> in
+      Ninja Fight.
+    </p>
+  </div>
+</section>
+
+<main class="wrap">
+  <div class="learn-grid">
+
+    <div class="learn-col">
+      <h2>Das Problem mit hartkodierten Plattformen</h2>
+      <p>
+        <code>ctx.fillRect(20, 60, 150, 10)</code> direkt im Code zu
+        schreiben funktioniert — bis man einen zweiten Level braucht. Dann
+        müsste man den Code kopieren und die Zahlen ändern. Zehn Level
+        später hat man zehn fast identische Code-Blöcke, die sich nur in
+        ein paar Zahlen unterscheiden.
+      </p>
+
+      <h2>Die Lösung: Level als Daten beschreiben</h2>
+      <p>
+        Statt Code zu schreiben, der eine Plattform <em>erzeugt</em>,
+        schreibt man eine <strong>Liste</strong>, die beschreibt, was wo
+        steht — reine Daten, keine Logik:
+      </p>
+      <pre><code>const LEVEL_1 = [
+  { type: "Floor", x: 0,   y: 414 },
+  { type: "Floor", x: 40,  y: 414 },
+  { type: "Ladder", x: 726, y: 293 },
+  { type: "Knives", x: 481, y: 300 },
+  // ...
+];</code></pre>
+      <p>
+        Das ist exakt das Format von <code>levels.js</code> in Ninja
+        Fight — <code>{ type, x, y }</code>, sonst nichts. Die Bedeutung
+        jedes Typs steckt nicht in den Daten, sondern im Code, der sie
+        verarbeitet.
+      </p>
+
+      <h2>buildLevel(): Rohdaten nach Bedeutung sortieren</h2>
+      <p>
+        Eine flache Liste reicht der Spiellogik nicht — sie will wissen:
+        "gegen welche Elemente kollidiere ich als Boden?", "welche sind
+        Leitern?", "welche sind Gefahren?". <code>buildLevel()</code>
+        sortiert die Rohdaten genau einmal in diese Kategorien:
+      </p>
+      <pre><code>function buildLevel(raw) {
+  const platforms = [], ladders = [], hazards = [];
+  raw.forEach(el => {
+    if (PLATTFORM_TYPEN.has(el.type)) platforms.push(el);
+    else if (el.type === "Ladder") ladders.push(el);
+    else if (el.type === "Knives") hazards.push(el);
+  });
+  return { platforms, ladders, hazards };
+}</code></pre>
+      <p>
+        Der Rest des Spiels (Kollision, Kletter-Logik, Gefahren-Prüfung —
+        alle aus den vorigen Kapiteln) arbeitet danach nur noch mit
+        <code>level.platforms</code>, <code>level.ladders</code> usw. und
+        muss die rohen Typnamen nie wieder anfassen.
+      </p>
+
+      <h2>Derselbe Code, ein anderer Level</h2>
+      <p>
+        Der eigentliche Gewinn: Um einen zweiten Level hinzuzufügen,
+        braucht man <strong>keine einzige Zeile</strong> am Rendering-
+        oder Kollisions-Code zu ändern — nur eine neue Datenliste zu
+        schreiben und sie stattdessen zu übergeben.
+      </p>
+
+      <div class="callout">
+        Bei Demo 3 zwischen zwei komplett unterschiedlichen Leveln
+        wechseln — derselbe <code>drawTile()</code>-Aufruf zeichnet beide,
+        nur die Datenliste ändert sich.
+      </div>
+    </div>
+
+    <div class="stage-wrap">
+      <div class="demo-buttons">
+        <button class="btn ghost btn-active" data-demo="compare">1 · Hartkodiert vs. Daten</button>
+        <button class="btn ghost" data-demo="build">2 · buildLevel()</button>
+        <button class="btn ghost" data-demo="swap">3 · Level austauschen</button>
+      </div>
+      <div class="stage-frame">
+        <canvas id="stage" width="480" height="260"></canvas>
+      </div>
+      <div id="swap-controls">
+        <button id="swap-btn" class="btn ghost">Level wechseln</button>
+      </div>
+      <p id="hint" class="controls-hint"></p>
+      <div class="stage-caption">
+        <span>07-level-daten/chapter.js</span>
+        <span>480×260</span>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<div class="chapter-footer-nav wrap">
+  <a href="../06-kollision-plattformen/">← Kapitel 6 · Kollision & Plattformen</a>
+  <a href="../08-hindernisse/">Weiter: Kapitel 8 · Hindernisse & Gefahren →</a>
+</div>
+
+<script src="chapter.js"></script>
+</body>
+</html>

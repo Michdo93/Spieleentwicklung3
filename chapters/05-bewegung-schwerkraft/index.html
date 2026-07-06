@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kapitel 5 · Bewegung & Schwerkraft — Ninja Fight von Grund auf</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/css/site.css">
+<link rel="stylesheet" href="chapter.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap">
+    <div class="brand"><span class="dot">&gt;</span> ninja-fight-tutorial <small>HTML5 + Vanilla JS</small></div>
+    <nav class="site-nav">
+      <a href="../../index.html">Alle Kapitel</a>
+      <a href="https://github.com/Michdo93" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<section class="chapter-hero">
+  <div class="wrap">
+    <div class="breadcrumb"><a href="../../index.html">Kapitel</a> / Kapitel 5</div>
+    <span class="readout">KAP·05</span>
+    <h1>Bewegung & Schwerkraft</h1>
+    <p class="lede" style="color:var(--text-dim); max-width:70ch;">
+      Kapitel 4 hat Tasten direkt in Position übersetzt
+      (<code>x += SPEED*dt</code>). Für einen Sprung reicht das nicht —
+      dieses Kapitel führt Geschwindigkeit als eigenen Wert ein und baut
+      daraus exakt die Sprungphysik aus <code>Hero.update()</code>.
+    </p>
+  </div>
+</section>
+
+<main class="wrap">
+  <div class="learn-grid">
+
+    <div class="learn-col">
+      <h2>Position vs. Geschwindigkeit</h2>
+      <p>
+        Solange sich etwas gleichmäßig bewegt, reicht
+        <code>x += SPEED * dt</code>. Aber ein Sprung <em>bremst sich
+        selbst ab</em> — die Geschwindigkeit ändert sich über Zeit. Dafür
+        braucht man einen eigenen Wert für die Geschwindigkeit
+        (<code>vx</code>/<code>vy</code>), den man selbst verändern kann,
+        statt direkt die Position zu verschieben.
+      </p>
+      <div class="compare">
+        <div class="col old">
+          <span class="tag">Nur Position (Kapitel 4)</span>
+          <pre><code>x += SPEED * dt;
+// SPEED ändert sich nie</code></pre>
+        </div>
+        <div class="col new">
+          <span class="tag">Geschwindigkeit als eigener Wert</span>
+          <pre><code>vx += BESCHLEUNIGUNG * dt;
+x += vx * dt;
+// vx wird selbst schneller</code></pre>
+        </div>
+      </div>
+
+      <h2>Schwerkraft: eine sich ständig erhöhende Fallgeschwindigkeit</h2>
+      <p>
+        Schwerkraft ist nichts Mysteriöses — nur eine Beschleunigung, die
+        ständig nach unten wirkt. Zwei Zeilen erzeugen jeden Fall in
+        diesem Tutorial und in Ninja Fight:
+      </p>
+      <pre><code>vy += GRAVITY * dt;  // die Fallgeschwindigkeit nimmt zu
+y  += vy * dt;       // die Position folgt der Geschwindigkeit</code></pre>
+      <p>
+        <code>GRAVITY = 1400</code> (Pixel pro Sekunde²) ist derselbe Wert,
+        der in Ninja Fight für Held <em>und</em> Gegner gilt — beide fallen
+        exakt gleich schnell.
+      </p>
+
+      <h2>Der Sprung: negative Geschwindigkeit + Schwerkraft</h2>
+      <p>
+        Ein Sprung ist keine neue Physik — nur ein einmaliger Anstoß nach
+        oben (negative <code>vy</code>, da "oben" auf dem Canvas kleinere
+        Y-Werte bedeutet), auf den danach exakt dieselbe Schwerkraft wie
+        in Demo 2 wirkt. Sie bremst die Aufwärtsbewegung, kehrt sie um,
+        und der Sprung endet automatisch als Fall.
+      </p>
+      <pre><code>if (key.jump && onGround) {
+  vy = -JUMP_SPEED;   // einmaliger Anstoß nach oben
+  onGround = false;
+}
+vy += GRAVITY * dt;    // wirkt immer, ob springend oder fallend
+y  += vy * dt;
+
+if (landung erkannt && vy >= 0) {  // nur beim FALLEN landen,
+  y = boden; vy = 0; onGround = true;  // nicht beim Hochspringen
+}</code></pre>
+      <p>
+        Die Bedingung <code>vy &gt;= 0</code> ist wichtig: Sie verhindert,
+        dass die Figur "landet", während sie noch nach oben fliegt — man
+        soll durch eine Plattform nach oben durchspringen können, aber
+        beim Herunterfallen darauf landen. Genau diese Zeile steht auch in
+        <code>Hero.update()</code>.
+      </p>
+
+      <div class="callout">
+        Bei Demo 3 die Leertaste drücken, während der Kreis auf dem Boden
+        steht (grün) — er springt (lila), fliegt einen Bogen, und landet
+        von selbst wieder.
+      </div>
+    </div>
+
+    <div class="stage-wrap">
+      <div class="demo-buttons">
+        <button class="btn ghost btn-active" data-demo="velocity">1 · Position vs. Geschwindigkeit</button>
+        <button class="btn ghost" data-demo="gravity">2 · Schwerkraft</button>
+        <button class="btn ghost" data-demo="jump">3 · Sprung</button>
+      </div>
+      <div class="stage-frame">
+        <canvas id="stage" width="480" height="240" tabindex="0"></canvas>
+      </div>
+      <p id="hint" class="controls-hint"></p>
+      <div class="stage-caption">
+        <span>05-bewegung-schwerkraft/chapter.js</span>
+        <span>480×240</span>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<div class="chapter-footer-nav wrap">
+  <a href="../04-eingabe/">← Kapitel 4 · Eingabe</a>
+  <a href="../06-kollision-plattformen/">Weiter: Kapitel 6 · Kollision & Plattformen →</a>
+</div>
+
+<script src="chapter.js"></script>
+</body>
+</html>

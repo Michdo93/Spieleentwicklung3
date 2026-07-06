@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kapitel 4 · Tastatur- & Maus-Eingabe — Ninja Fight von Grund auf</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/css/site.css">
+<link rel="stylesheet" href="chapter.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap">
+    <div class="brand"><span class="dot">&gt;</span> ninja-fight-tutorial <small>HTML5 + Vanilla JS</small></div>
+    <nav class="site-nav">
+      <a href="../../index.html">Alle Kapitel</a>
+      <a href="https://github.com/Michdo93" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<section class="chapter-hero">
+  <div class="wrap">
+    <div class="breadcrumb"><a href="../../index.html">Kapitel</a> / Kapitel 4</div>
+    <span class="readout">KAP·04</span>
+    <h1>Tastatur- & Maus-Eingabe</h1>
+    <p class="lede" style="color:var(--text-dim); max-width:70ch;">
+      Der Baustein, der ein bewegliches Rechteck zu etwas macht, das man
+      tatsächlich <em>steuern</em> kann. Das hier aufgebaute
+      <code>keys</code>-Objekt ist wortwörtlich dieselbe Struktur wie
+      <code>GameManager.keys</code> in Ninja Fight.
+    </p>
+  </div>
+</section>
+
+<main class="wrap">
+  <div class="learn-grid">
+
+    <div class="learn-col">
+      <h2>Das Problem mit rohen Events</h2>
+      <p>
+        <code>keydown</code> und <code>keyup</code> feuern jeweils
+        <strong>einmal</strong> — beim Drücken bzw. Loslassen. Für "die
+        Figur soll sich bewegen, solange die Taste gehalten wird" reicht
+        das allein nicht: man bräuchte in der Event-Funktion selbst schon
+        eine Bewegung anstoßen, hätte aber keine Kontrolle über das
+        <em>Aufhören</em>, ohne sich selbst Buchhaltung zu bauen.
+      </p>
+      <p>
+        Demo 1 zeigt das Rohmaterial: jeder Tastendruck erzeugt eine
+        Log-Zeile. Kein Zustand, nur Momentaufnahmen.
+      </p>
+
+      <h2>Die Lösung: ein Key-State-Objekt</h2>
+      <p>
+        Statt in der Event-Funktion selbst etwas zu bewegen, setzt sie nur
+        ein <strong>Flag</strong>. Der Game-Loop (aus Kapitel 1) fragt
+        dieses Flag bei jedem Frame ab — dadurch bewegt sich die Figur
+        automatisch, solange die Taste gehalten wird, und hört auf, sobald
+        sie los ist.
+      </p>
+      <pre><code>const keys = { left: false, right: false, up: false, down: false };
+
+function keyDown(e) {
+  if (e.code === "ArrowLeft") keys.left = true;
+  // ...
+}
+function keyUp(e) {
+  if (e.code === "ArrowLeft") keys.left = false;
+  // ...
+}
+
+// im Loop, jeden Frame:
+if (keys.left) x -= SPEED * dt;</code></pre>
+      <p>
+        Das ist exakt <code>GameManager.keys</code> in Ninja Fight —
+        <code>keyDown()</code>/<code>keyUp()</code> setzen nur Flags,
+        <code>Hero.moveHorizontal()</code> fragt sie jeden Frame ab. Die
+        Eingabe-Erkennung und die Bewegungslogik sind dadurch vollständig
+        getrennt — ein wichtiges Prinzip, das sich durch den Rest des
+        Spiels zieht.
+      </p>
+
+      <h2><code>e.key</code> vs. <code>e.code</code></h2>
+      <p>
+        <code>e.key</code> liefert das tatsächliche Zeichen (abhängig vom
+        Tastaturlayout — auf einer deutschen Tastatur würde <kbd>Z</kbd>
+        und <kbd>Y</kbd> vertauscht sein). <code>e.code</code> liefert die
+        physische Tastenposition, unabhängig vom Layout — deshalb prüft
+        Ninja Fight durchgehend <code>e.code</code> (<code>"KeyW"</code>
+        statt <code>"w"</code>).
+      </p>
+
+      <h2>Maus-Klicks: Koordinaten umrechnen, dann Trefftest</h2>
+      <p>
+        <code>e.clientX/clientY</code> sind Bildschirmkoordinaten. Um zu
+        wissen, wo der Klick <em>innerhalb des Canvas</em> war, zieht man
+        die Position des Canvas auf der Seite ab
+        (<code>getBoundingClientRect()</code>) — danach ist es nur noch
+        ein normaler Rechteck-Trefftest. Dasselbe Muster erkennt sowohl
+        Klicks auf Menü-Buttons als auch (im späteren Kurs-Projekt) die
+        Auswahl einer Spielfigur per Klick.
+      </p>
+
+      <div class="callout">
+        Bei Demo 2 mit WASD/Pfeiltasten den Kreis bewegen — er bewegt sich
+        nur, solange eine Taste gehalten wird, und stoppt sofort beim
+        Loslassen.
+      </div>
+    </div>
+
+    <div class="stage-wrap">
+      <div class="demo-buttons">
+        <button class="btn ghost btn-active" data-demo="raw">1 · Rohe Events</button>
+        <button class="btn ghost" data-demo="state">2 · Key-State-Objekt</button>
+        <button class="btn ghost" data-demo="click">3 · Maus-Klicks</button>
+      </div>
+      <div class="stage-frame">
+        <canvas id="stage" width="500" height="260" tabindex="0"></canvas>
+      </div>
+      <p id="hint" class="controls-hint"></p>
+      <div id="event-log-wrap">
+        <div id="event-log"></div>
+      </div>
+      <div class="stage-caption">
+        <span>04-eingabe/chapter.js</span>
+        <span>500×260</span>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<div class="chapter-footer-nav wrap">
+  <a href="../03-sprite-animation/">← Kapitel 3 · Sprite-Animation</a>
+  <a href="../05-bewegung-schwerkraft/">Weiter: Kapitel 5 · Bewegung & Schwerkraft →</a>
+</div>
+
+<script src="chapter.js"></script>
+</body>
+</html>

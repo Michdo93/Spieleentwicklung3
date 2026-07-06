@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kapitel 9 · Leitern & Klettern — Ninja Fight von Grund auf</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/css/site.css">
+<link rel="stylesheet" href="chapter.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap">
+    <div class="brand"><span class="dot">&gt;</span> ninja-fight-tutorial <small>HTML5 + Vanilla JS</small></div>
+    <nav class="site-nav">
+      <a href="../../index.html">Alle Kapitel</a>
+      <a href="https://github.com/Michdo93" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<section class="chapter-hero">
+  <div class="wrap">
+    <div class="breadcrumb"><a href="../../index.html">Kapitel</a> / Kapitel 9</div>
+    <span class="readout">KAP·09</span>
+    <h1>Leitern & Klettern</h1>
+    <p class="lede" style="color:var(--text-dim); max-width:70ch;">
+      Ein dritter Bewegungszustand neben Laufen und Springen — mit einer
+      echten Lektion aus der Entwicklung von Ninja Fight: eine falsch
+      berechnete Kollisionszone ließ Figuren am unteren Leiterende ins
+      Leere fallen.
+    </p>
+  </div>
+</section>
+
+<main class="wrap">
+  <div class="learn-grid">
+
+    <div class="learn-col">
+      <h2>Klettern: Schwerkraft aussetzen, Position direkt steuern</h2>
+      <p>
+        Solange man klettert, gilt keine Schwerkraft — die Y-Position wird
+        direkt von der Tastatur gesteuert, begrenzt auf die Leiterzone:
+      </p>
+      <pre><code>const wantsClimb = inLadderZone
+  && (keys.up || keys.down)
+  && !keys.left && !keys.right;
+
+if (wantsClimb) {
+  vy = 0;
+  y += (keys.up ? -1 : 1) * CLIMB_SPEED * dt;
+  y = clamp(y, ladder.top, ladder.bottom);
+} else {
+  // normale Bewegung + Schwerkraft
+}</code></pre>
+      <p>
+        Wichtig: Klettern greift nur, wenn <strong>ausschließlich</strong>
+        hoch/runter gedrückt wird — sobald links/rechts dazukommt, verlässt
+        man die Leiter sofort, und normale Bewegung/Schwerkraft übernimmt
+        wieder. Kein Gedächtnis über mehrere Frames nötig.
+      </p>
+
+      <h2>Der echte Bug: eine zu groß berechnete Kollisionszone</h2>
+      <p>
+        Beim Bau von Ninja Fight wurden mehrere einzelne Leiter-Sprossen
+        (jede ihr eigenes kleines Kachel-Rechteck) zu einer einzigen
+        durchgehenden Kletterzone zusammengefasst. Der Fehler dabei: die
+        Kachelhöhe wurde <strong>zweimal</strong> auf das untere Ende
+        addiert, statt einmal.
+      </p>
+      <div class="compare">
+        <div class="col old">
+          <span class="tag">Fehlerhaft</span>
+          <pre><code>bottom = letzteSprosse.y
+  + letzteSprosse.höhe
+  + KACHEL_HÖHE; // zu viel!</code></pre>
+        </div>
+        <div class="col new">
+          <span class="tag">Korrigiert</span>
+          <pre><code>bottom = letzteSprosse.y
+  + letzteSprosse.höhe;</code></pre>
+        </div>
+      </div>
+      <p>
+        Die Auswirkung: Die Kletterzone reichte bis unter die eigentliche
+        Bodenoberfläche. Klettert man nach unten bis ans (falsche) Ende der
+        Zone, steht man bereits <em>unter</em> dem Boden — die
+        Landungsprüfung aus Kapitel 6 (<code>y &lt;= plattform.y + 2</code>)
+        erkennt das nie als Landung, weil sie eine Annäherung <em>von
+        oben</em> erwartet. Die Figur fällt einfach weiter.
+      </p>
+
+      <h2>Warum das leicht zu übersehen war</h2>
+      <p>
+        Beim Testen mit der Tastatur bemerkt man den Unterschied zwischen
+        "1px zu tief" und "48px zu tief" oft erst, wenn man wirklich bis
+        ans Ende klettert — genau deshalb lohnt es sich, Kollisionszonen
+        beim Entwickeln sichtbar zu machen (wie in den Demos hier, als
+        gestrichelter Rahmen), statt ihnen blind zu vertrauen.
+      </p>
+
+      <div class="callout">
+        Bei Demo 1 ganz nach unten klettern und dann loslassen — die
+        Figur fällt durch den scheinbar festen Boden. Bei Demo 2 (korrigiert)
+        funktioniert exakt derselbe Ablauf einwandfrei.
+      </div>
+    </div>
+
+    <div class="stage-wrap">
+      <div class="demo-buttons">
+        <button class="btn ghost btn-active" data-demo="bug">1 · Der Bug</button>
+        <button class="btn ghost" data-demo="fixed">2 · Die Korrektur</button>
+        <button class="btn ghost" data-demo="full">3 · Volle Integration</button>
+      </div>
+      <div class="stage-frame">
+        <canvas id="stage" width="300" height="220" tabindex="0"></canvas>
+      </div>
+      <p id="hint" class="controls-hint"></p>
+      <div class="stage-caption">
+        <span>09-leitern/chapter.js</span>
+        <span>300×220</span>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<div class="chapter-footer-nav wrap">
+  <a href="../08-hindernisse/">← Kapitel 8 · Hindernisse & Gefahren</a>
+  <a href="../10-nahkampf/">Weiter: Kapitel 10 · Nahkampf →</a>
+</div>
+
+<script src="chapter.js"></script>
+</body>
+</html>

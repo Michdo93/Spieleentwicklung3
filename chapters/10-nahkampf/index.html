@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kapitel 10 · Nahkampf & Hitboxen — Ninja Fight von Grund auf</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/css/site.css">
+<link rel="stylesheet" href="chapter.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap">
+    <div class="brand"><span class="dot">&gt;</span> ninja-fight-tutorial <small>HTML5 + Vanilla JS</small></div>
+    <nav class="site-nav">
+      <a href="../../index.html">Alle Kapitel</a>
+      <a href="https://github.com/Michdo93" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<section class="chapter-hero">
+  <div class="wrap">
+    <div class="breadcrumb"><a href="../../index.html">Kapitel</a> / Kapitel 10</div>
+    <span class="readout">KAP·10</span>
+    <h1>Nahkampf & Hitboxen</h1>
+    <p class="lede" style="color:var(--text-dim); max-width:70ch;">
+      Kapitel 6 hat AABB-Kollision für Landung genutzt — dieselbe Technik
+      erkennt auch Treffer. Dieses Kapitel baut den Angriffs-Teil aus
+      <code>Hero.update()</code> nach.
+    </p>
+  </div>
+</section>
+
+<main class="wrap">
+  <div class="learn-grid">
+
+    <div class="learn-col">
+      <h2>Die Trefferzone wandert mit der Blickrichtung</h2>
+      <p>
+        Ein Schlag trifft nicht überall — nur in einem kleinen Bereich vor
+        der Figur. Weil <code>facing</code> (aus Kapitel 2) schon bekannt
+        ist, lässt sich die Zone einfach je nach Blickrichtung links oder
+        rechts der Figur platzieren:
+      </p>
+      <pre><code>const hitBox = rectOf(
+  x + (facing > 0 ? 0 : -range),
+  y - 40,
+  range, 30
+);</code></pre>
+      <p>
+        Bei <code>facing = 1</code> (rechts) beginnt die Zone direkt bei
+        <code>x</code> und reicht nach rechts; bei
+        <code>facing = -1</code> beginnt sie <code>range</code> Pixel
+        <em>links</em> von <code>x</code>. Eine einzige Formel für beide
+        Richtungen.
+      </p>
+
+      <h2>Ein Treffer pro Angriff — nicht einer pro Frame</h2>
+      <p>
+        Eine Angriffsanimation dauert einige Zehntelsekunden, also mehrere
+        Frames. Ohne Sperre würde <strong>jeder einzelne Frame</strong>,
+        in dem sich Trefferzone und Gegner überlappen, erneut Schaden
+        anrichten. Die Lösung ist ein einfaches Flag:
+      </p>
+      <pre><code>if (attackTimer > 0 && !attackHitDone) {
+  if (overlaps(hitBox, gegner.box)) {
+    gegner.takeDamage(schaden);
+    attackHitDone = true; // ab jetzt gesperrt, bis der nächste Angriff startet
+  }
+}</code></pre>
+      <p>
+        <code>attackHitDone</code> wird erst wieder auf
+        <code>false</code> gesetzt, wenn eine neue Angriffsanimation
+        beginnt — Demo 2 zeigt den Unterschied direkt nebeneinander: ohne
+        Sperre zählt jeder Frame, mit Sperre genau einer pro Angriff.
+      </p>
+
+      <h2>Unterschiedliche Reichweite und Schaden je Angriffsart</h2>
+      <p>
+        Schlag, Tritt und Schwert benutzen exakt dieselbe Trefferzonen-
+        Logik — nur mit unterschiedlichen Werten:
+      </p>
+      <table style="width:100%; font-family: var(--font-mono); font-size:0.85rem; color: var(--text-dim); border-collapse: collapse; margin: 12px 0;">
+        <tr style="border-bottom:1px solid var(--line);"><th style="text-align:left; padding:6px 0;">Angriff</th><th style="text-align:left;">Reichweite</th><th style="text-align:left;">Schaden</th></tr>
+        <tr><td style="padding:4px 0;">Schlag (Hit)</td><td>30px</td><td>1</td></tr>
+        <tr><td style="padding:4px 0;">Tritt (Kick)</td><td>34px</td><td>2</td></tr>
+        <tr><td style="padding:4px 0;">Schwert (Sword)</td><td>46px</td><td>10</td></tr>
+      </table>
+      <p>
+        Genau diese Tabelle steht als <code>DAMAGE</code>-Konstante in
+        <code>entities.js</code> — Reichweite und Schaden sind bewusst
+        gekoppelt: eine größere Waffe trifft weiter <em>und</em> härter.
+      </p>
+
+      <div class="callout">
+        Bei Demo 3 mit den drei Angriffsarten auf den Gegner einwirken —
+        die HP-Anzeige zeigt sofort, wie unterschiedlich stark jede
+        Angriffsart wirkt.
+      </div>
+    </div>
+
+    <div class="stage-wrap">
+      <div class="demo-buttons">
+        <button class="btn ghost btn-active" data-demo="hitbox">1 · Trefferzone</button>
+        <button class="btn ghost" data-demo="onehit">2 · Ein Treffer pro Angriff</button>
+        <button class="btn ghost" data-demo="damage">3 · Schaden je Angriffsart</button>
+      </div>
+      <div class="stage-frame">
+        <canvas id="stage" width="480" height="220"></canvas>
+      </div>
+      <div id="flip-controls"><button id="flip-btn" class="btn ghost">Blickrichtung wechseln</button></div>
+      <div id="attack-controls"><button id="attack-btn" class="btn ghost">Angreifen</button></div>
+      <div id="damage-controls">
+        <button id="btn-hit" class="btn ghost">Schlag</button>
+        <button id="btn-kick" class="btn ghost">Tritt</button>
+        <button id="btn-sword" class="btn ghost">Schwert</button>
+        <button id="reset-btn" class="btn ghost">HP zurücksetzen</button>
+      </div>
+      <p id="hp-display"></p>
+      <p id="hint" class="controls-hint"></p>
+      <div class="stage-caption">
+        <span>10-nahkampf/chapter.js</span>
+        <span>480×220</span>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<div class="chapter-footer-nav wrap">
+  <a href="../09-leitern/">← Kapitel 9 · Leitern & Klettern</a>
+  <a href="../11-fernkampf/">Weiter: Kapitel 11 · Fernkampf & Projektile →</a>
+</div>
+
+<script src="chapter.js"></script>
+</body>
+</html>

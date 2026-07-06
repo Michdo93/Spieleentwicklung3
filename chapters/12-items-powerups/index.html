@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kapitel 12 · Items & Power-Ups — Ninja Fight von Grund auf</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/css/site.css">
+<link rel="stylesheet" href="chapter.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap">
+    <div class="brand"><span class="dot">&gt;</span> ninja-fight-tutorial <small>HTML5 + Vanilla JS</small></div>
+    <nav class="site-nav">
+      <a href="../../index.html">Alle Kapitel</a>
+      <a href="https://github.com/Michdo93" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<section class="chapter-hero">
+  <div class="wrap">
+    <div class="breadcrumb"><a href="../../index.html">Kapitel</a> / Kapitel 12</div>
+    <span class="readout">KAP·12</span>
+    <h1>Items & Power-Ups</h1>
+    <p class="lede" style="color:var(--text-dim); max-width:70ch;">
+      Ein Power-Up ist im Kern ein kleiner Cousin der Figuren aus den
+      vorigen Kapiteln — es fällt mit derselben Schwerkraft, landet auf
+      derselben Art Plattform, nur ohne eigene Steuerung.
+    </p>
+  </div>
+</section>
+
+<main class="wrap">
+  <div class="learn-grid">
+
+    <div class="learn-col">
+      <h2>Ein Item fällt genau wie eine Figur</h2>
+      <p>
+        Kein neuer Mechanismus nötig — <code>PowerUp.update()</code>
+        verwendet exakt dieselbe Schwerkraft (Kapitel 5) und Landungs-
+        Prüfung (Kapitel 6) wie Held und Gegner:
+      </p>
+      <pre><code>class PowerUp {
+  update(dt, plattformY) {
+    this.vy += GRAVITY * dt;
+    const nextY = this.y + this.vy * dt;
+    if (nextY >= plattformY) {
+      this.y = plattformY; this.vy = 0; this.landed = true;
+    } else this.y = nextY;
+  }
+}</code></pre>
+
+      <h2>Drei Arten von Effekten</h2>
+      <p>
+        Nicht jeder Effekt funktioniert gleich. In Ninja Fight gibt es
+        drei grundverschiedene Muster:
+      </p>
+      <div class="compare">
+        <div class="col old">
+          <span class="tag">Sofortig (Herz)</span>
+          <pre><code>hp = Math.min(max, hp + 2);
+// einmalig, keine Nachwirkung</code></pre>
+        </div>
+        <div class="col new">
+          <span class="tag">Zeitbegrenzt (Schwert)</span>
+          <pre><code>hasSword = true;
+swordTimer = 30;
+// zählt selbst herunter,
+// dann automatisch weg</code></pre>
+        </div>
+      </div>
+      <pre><code>// Zählbegrenzt (Shuriken)
+shurikenCount += 3;
+// nimmt bei jeder Nutzung ab,
+// kein Timer nötig</code></pre>
+      <p>
+        Ein sofortiger Effekt braucht nichts weiter zu merken. Ein
+        zeitbegrenzter Effekt braucht einen Timer, der jeden Frame
+        herunterzählt. Ein zählbegrenzter Effekt braucht nur einen
+        Zähler, der bei Benutzung sinkt — beide sind einfacher als sie
+        klingen, sobald man sie als getrennte Muster erkennt.
+      </p>
+
+      <h2>Jeder kann es aufheben — auch der Gegner</h2>
+      <p>
+        Ein Detail, das leicht übersehen wird: <code>PowerUp.update()</code>
+        prüft in Ninja Fight <strong>alle</strong> lebenden Figuren auf
+        Kollision, nicht nur den Helden. Das bedeutet: ein Gegner kann dem
+        Spieler ein Item buchstäblich vor der Nase wegschnappen, wenn er
+        zuerst ankommt.
+      </p>
+      <pre><code>for (const figur of [held, ...gegner]) {
+  if (!item.collected && überlappt(figur, item)) {
+    item.collected = true;
+    figur.collectPowerUp(item.type); // wer zuerst da ist, gewinnt
+  }
+}</code></pre>
+
+      <div class="callout">
+        Bei Demo 3 mit den Pfeiltasten schneller sein als der (automatisch
+        laufende) Gegner — wer zuerst am Schwert ist, bekommt es.
+      </div>
+    </div>
+
+    <div class="stage-wrap">
+      <div class="demo-buttons">
+        <button class="btn ghost btn-active" data-demo="falling">1 · Ein fallendes Item</button>
+        <button class="btn ghost" data-demo="effects">2 · Drei Effekt-Arten</button>
+        <button class="btn ghost" data-demo="anyone">3 · Jeder kann es aufheben</button>
+      </div>
+      <div class="stage-frame">
+        <canvas id="stage" width="480" height="220" tabindex="0"></canvas>
+      </div>
+      <div id="drop-controls"><button id="btn-drop" class="btn ghost">Neues Item fallen lassen</button></div>
+      <div id="effect-controls">
+        <button id="btn-collect-heart" class="btn ghost">Herz einsammeln</button>
+        <button id="btn-collect-sword" class="btn ghost">Schwert einsammeln</button>
+        <button id="btn-collect-shuriken" class="btn ghost">Shuriken einsammeln</button>
+        <button id="throw-btn" class="btn ghost">Shuriken werfen (-1)</button>
+      </div>
+      <p id="status-display"></p>
+      <div id="anyone-controls"><button id="reset-item-btn" class="btn ghost">Item zurücksetzen</button></div>
+      <p id="hint" class="controls-hint"></p>
+      <div class="stage-caption">
+        <span>12-items-powerups/chapter.js</span>
+        <span>480×220</span>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<div class="chapter-footer-nav wrap">
+  <a href="../11-fernkampf/">← Kapitel 11 · Fernkampf & Projektile</a>
+  <a href="../13-gegner-ki-bewegung/">Weiter: Kapitel 13 · Gegner-KI: Bewegung →</a>
+</div>
+
+<script src="chapter.js"></script>
+</body>
+</html>
