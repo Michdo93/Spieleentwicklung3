@@ -29,12 +29,13 @@ function drawTile(name, x, y, frame = 0) {
   ctx.drawImage(tileSheet, sx, sy, def.w, def.h, x, y, def.w, def.h);
 }
 function drawFlame(x, y, w, h) {
+  // y ist jetzt die Basis (Bodenkontakt) — die Flamme wächst nach OBEN
   const flick = 0.7 + Math.sin(performance.now() / 90 + x) * 0.3;
   ctx.fillStyle = `rgba(255,${100 + flick * 80},60,0.95)`;
   ctx.beginPath();
-  ctx.moveTo(x + w / 2, y - 4);
-  ctx.quadraticCurveTo(x + w, y + h * 0.4, x + w / 2, y + h);
-  ctx.quadraticCurveTo(x, y + h * 0.4, x + w / 2, y - 4);
+  ctx.moveTo(x + w / 2, y - h);
+  ctx.quadraticCurveTo(x + w, y - h * 0.6, x + w / 2, y + 4);
+  ctx.quadraticCurveTo(x, y - h * 0.6, x + w / 2, y - h);
   ctx.fill();
 }
 function clearStage() { ctx.fillStyle = "#0b1a24"; ctx.fillRect(0, 0, W, H); }
@@ -66,7 +67,15 @@ const demoWater = {
 
       clearStage();
       whenReady(() => {
-        for (let gx = 0; gx < W; gx += 40) drawTile("WaterGround", gx, 160);
+        for (let gx = 0; gx < W; gx += 40) {
+          drawTile("WaterGround", gx, 160);
+          // ein kleines Stück Wasser ÜBER der eigentlichen Kachel, damit
+          // sichtbar wird, dass man auf der Wasseroberfläche steht statt
+          // im Wasser zu versinken
+          const wobble = Math.sin(performance.now() / 400 + gx) * 1.5;
+          ctx.fillStyle = "rgba(88,184,243,0.55)";
+          ctx.fillRect(gx, 158 + wobble, 40, 3);
+        }
         ctx.fillStyle = "#5fe0c9";
         ctx.beginPath(); ctx.arc(x + 10, 148, 12, 0, Math.PI * 2); ctx.fill();
       });
@@ -86,7 +95,11 @@ const demoFlame = {
   run() {
     hint.textContent = "Steh in der Flamme — 1 Schaden pro Kontakt, aber erst nach 0,6s Abklingzeit wieder. Ohne diese Sperre würde jeder einzelne Frame Schaden anrichten (60× pro Sekunde!).";
     hpDisplay.style.display = "block";
-    const flame = { x: 220, y: 138, w: 26, h: 34 };
+    // Bugfix: flame.y muss die BASIS der Flamme sein (Bodenhöhe, hier
+    // 160 — dieselbe Höhe, auf der die Figur steht), nicht ihre
+    // Oberkante. Vorher stand hier y:138, wodurch footY (immer 160)
+    // nie in den Prüfbereich fiel und niemals Schaden ausgelöst wurde.
+    const flame = { x: 220, y: 160, w: 26, h: 34 };
     let x = 40, hp = 10, invulnTimer = 0;
     const keys = {};
     const onDown = (e) => { keys[e.code] = true; };
@@ -133,7 +146,7 @@ const demoFlame = {
 /* ================================================================== */
 const demoKnives = {
   run() {
-    hint.textContent = "Stacheln ziehen 5 statt 1 HP ab (dieselbe Abklingzeit-Technik) — deutlich gefährlicher als Feuer, aber kein Insta-Kill wie ursprünglich beim Helden.";
+    hint.textContent = "Stacheln ziehen 5 statt 1 HP ab (dieselbe Abklingzeit-Technik). Wichtig: das gilt hier für Gegner — der HELD stirbt in Ninja Fight beim Kontakt mit Stacheln sofort, ganz ohne Abklingzeit (siehe Erklärung unten).";
     hpDisplay.style.display = "block";
     const knives = { x: 220, y: 144, w: 18, h: 16 };
     let x = 40, hp = 10, invulnTimer = 0;

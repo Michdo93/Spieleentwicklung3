@@ -70,15 +70,20 @@ const demoBug = {
       const dt = Math.min((now - lastTime) / 1000, 0.05);
       lastTime = now;
 
+      // Bugfix: solange man sich IN der Leiterzone befindet (und nicht
+      // seitlich aussteigt), ist die Schwerkraft komplett aufgehoben —
+      // auch ohne hoch/runter zu drücken. Wer klettert, rutscht nicht
+      // von selbst herunter; man hält sich an einer Sprosse fest und
+      // bewegt sich nur, wenn man aktiv hoch oder runter drückt.
       const inZone = x > ladder.left - 4 && x < ladder.right + 4 && y > ladder.top - 6 && y < ladder.bottom + 6;
-      const wantsClimb = inZone && (keys["ArrowUp"] || keys["ArrowDown"]) && !keys["ArrowLeft"] && !keys["ArrowRight"];
+      onLadder = inZone && !keys["ArrowLeft"] && !keys["ArrowRight"];
 
-      if (wantsClimb) {
-        onLadder = true; vy = 0;
-        y += (keys["ArrowUp"] ? -1 : 1) * CLIMB_SPEED * dt;
+      if (onLadder) {
+        vy = 0;
+        if (keys["ArrowUp"]) y -= CLIMB_SPEED * dt;
+        else if (keys["ArrowDown"]) y += CLIMB_SPEED * dt;
         y = Math.max(ladder.top, Math.min(ladder.bottom, y)); // die FALSCHE (zu große) Zone
       } else {
-        onLadder = false;
         if (keys["ArrowLeft"]) x -= 100 * dt;
         if (keys["ArrowRight"]) x += 100 * dt;
       }
@@ -127,15 +132,17 @@ const demoFixed = {
       const dt = Math.min((now - lastTime) / 1000, 0.05);
       lastTime = now;
 
+      // Schwerkraft ist innerhalb der Leiterzone komplett aufgehoben —
+      // auch ohne hoch/runter zu drücken (siehe Kapitel-Erklärung)
       const inZone = x > ladder.left - 4 && x < ladder.right + 4 && y > ladder.top - 6 && y < ladder.bottom + 6;
-      const wantsClimb = inZone && (keys["ArrowUp"] || keys["ArrowDown"]) && !keys["ArrowLeft"] && !keys["ArrowRight"];
+      onLadder = inZone && !keys["ArrowLeft"] && !keys["ArrowRight"];
 
-      if (wantsClimb) {
-        onLadder = true; vy = 0;
-        y += (keys["ArrowUp"] ? -1 : 1) * CLIMB_SPEED * dt;
+      if (onLadder) {
+        vy = 0;
+        if (keys["ArrowUp"]) y -= CLIMB_SPEED * dt;
+        else if (keys["ArrowDown"]) y += CLIMB_SPEED * dt;
         y = Math.max(ladder.top, Math.min(ladder.bottom, y));
       } else {
-        onLadder = false;
         if (keys["ArrowLeft"]) x -= 100 * dt;
         if (keys["ArrowRight"]) x += 100 * dt;
       }
@@ -188,15 +195,17 @@ const demoFull = {
       const dt = Math.min((now - lastTime) / 1000, 0.05);
       lastTime = now;
 
+      // Schwerkraft ist innerhalb der Leiterzone komplett aufgehoben —
+      // auch ohne hoch/runter zu drücken (siehe Kapitel-Erklärung)
       const inZone = x > ladder.left - 4 && x < ladder.right + 4 && y > ladder.top - 6 && y < ladder.bottom + 6;
-      const wantsClimb = inZone && (keys["ArrowUp"] || keys["ArrowDown"]) && !keys["ArrowLeft"] && !keys["ArrowRight"];
+      onLadder = inZone && !keys["ArrowLeft"] && !keys["ArrowRight"];
 
-      if (wantsClimb) {
-        onLadder = true; vy = 0;
-        y += (keys["ArrowUp"] ? -1 : 1) * CLIMB_SPEED * dt;
+      if (onLadder) {
+        vy = 0;
+        if (keys["ArrowUp"]) y -= CLIMB_SPEED * dt;
+        else if (keys["ArrowDown"]) y += CLIMB_SPEED * dt;
         y = Math.max(ladder.top, Math.min(ladder.bottom, y));
       } else {
-        onLadder = false;
         if (keys["ArrowLeft"]) x -= 130 * dt;
         if (keys["ArrowRight"]) x += 130 * dt;
         x = Math.max(10, Math.min(W - 10, x));

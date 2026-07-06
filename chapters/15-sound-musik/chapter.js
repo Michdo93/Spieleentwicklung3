@@ -53,13 +53,22 @@ function updateStatus(msg) { document.getElementById("music-status").textContent
 /* ================================================================== */
 /*  Demo 2: Soundeffekte — mehrfach schnell hintereinander auslösbar    */
 /* ================================================================== */
-let sfxCount = 0;
+let swordCount = 0, coinsCount = 0;
+function updateSfxDisplay() {
+  document.getElementById("sfx-count").textContent =
+    `Schwert: ${swordCount}× · Münzen: ${coinsCount}× (beide unabhängig zählbar, auch mehrfach schnell hintereinander)`;
+}
 document.getElementById("btn-sword-sfx").addEventListener("click", () => {
   sound.playSword();
-  sfxCount++;
-  document.getElementById("sfx-count").textContent = `${sfxCount}× abgespielt (auch mehrfach schnell hintereinander möglich)`;
+  swordCount++;
+  updateSfxDisplay();
 });
-document.getElementById("btn-coins-sfx").addEventListener("click", () => sound.playCoins());
+document.getElementById("btn-coins-sfx").addEventListener("click", () => {
+  sound.playCoins();
+  coinsCount++;
+  updateSfxDisplay();
+});
+updateSfxDisplay();
 
 /* ================================================================== */
 /*  Demo 3: gemeinsame Lautstärke für alles                             */

@@ -14,10 +14,15 @@
   display: none;
   gap: 10px;
   align-items: center;
+  flex-wrap: wrap;
   margin-top: 10px;
   font-family: var(--font-mono);
   font-size: 0.8rem;
   color: var(--text-dim);
+}
+#position-controls .btn.ghost.btn-active {
+  border-color: var(--amber);
+  color: var(--amber);
 }
 #hud-demo {
   display: none;

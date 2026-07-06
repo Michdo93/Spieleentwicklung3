@@ -47,6 +47,14 @@
         läuft einfach drüber, wie über Boden. Nicht jedes Level-Element,
         das anders aussieht, muss auch anders funktionieren.
       </p>
+      <p>
+        Damit das auch optisch nachvollziehbar bleibt, zeichnet Demo 1
+        eine kleine, leicht wellige Wasseroberfläche <em>über</em> der
+        eigentlichen Kachel — man steht sichtbar auf dem Wasser, statt
+        scheinbar darin zu versinken:
+      </p>
+      <pre><code>const wobble = Math.sin(zeit / 400 + x) * 1.5;
+ctx.fillRect(x, kachelY - 2 + wobble, kachelBreite, 3);</code></pre>
 
       <h2>Feuer: Schaden über Zeit, mit Abklingzeit</h2>
       <p>
@@ -68,26 +76,38 @@ if (invulnTimer > 0) invulnTimer -= dt;</code></pre>
         gerade gesetzte Timer im selben Frame schon wieder ablaufen).
       </p>
 
-      <h2>Stacheln: dieselbe Technik, höherer Schaden</h2>
+      <h2>Stacheln: dieselbe Technik, höherer Schaden — aber nur für Gegner</h2>
       <p>
-        Stacheln benutzen exakt dieselbe Abklingzeit-Logik wie Feuer — nur
-        mit einem höheren Schadenswert (5 statt 1). Wichtig: In dieser
-        Version verlieren auch Gegner nur Lebenspunkte durch Stacheln,
-        statt sofort zu sterben — eine bewusste Design-Entscheidung, keine
-        Notwendigkeit der Technik selbst.
+        Stacheln benutzen hier exakt dieselbe Abklingzeit-Logik wie Feuer
+        — nur mit einem höheren Schadenswert (5 statt 1). Eine berechtigte
+        Frage dazu: <strong>ist eine Abklingzeit bei Stacheln überhaupt
+        richtig?</strong> Die Antwort ist nicht einheitlich — in Ninja
+        Fight verhalten sich Stacheln für Held und Gegner unterschiedlich:
       </p>
       <div class="compare">
         <div class="col old">
-          <span class="tag">Feuer</span>
-          <pre><code>hp -= 1;
-invulnTimer = 0.6;</code></pre>
+          <span class="tag">Held</span>
+          <pre><code>// sofortiger Tod, KEINE
+// Abklingzeit, kein hp-=
+onHeroDeath("knives");</code></pre>
         </div>
         <div class="col new">
-          <span class="tag">Stacheln</span>
+          <span class="tag">Gegner (spätere Design-Entscheidung)</span>
           <pre><code>hp -= 5;
 invulnTimer = 0.6;</code></pre>
         </div>
       </div>
+      <p>
+        Für den Helden gilt in Ninja Fight: Kontakt mit Stacheln bedeutet
+        sofortigen Tod, ganz ohne Abklingzeit — genau wie im
+        Original-Spielkonzept vorgesehen. Die Abklingzeit-Variante mit
+        Schadenspunkten wurde erst später ausschließlich für Gegner
+        eingeführt (auf ausdrücklichen Wunsch, damit Gegner durch
+        Stacheln geschwächt statt sofort eliminiert werden). Die Demo
+        hier zeigt bewusst die Gegner-Variante, weil sie den
+        Abklingzeit-Mechanismus besser sichtbar macht als ein sofortiger
+        Tod es könnte.
+      </p>
       <p>
         Derselbe Mechanismus, unterschiedliche Werte — ein gutes Beispiel
         dafür, wie sich neue Gefahrentypen mit minimalem neuem Code

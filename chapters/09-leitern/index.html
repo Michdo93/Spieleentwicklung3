@@ -41,25 +41,33 @@
     <div class="learn-col">
       <h2>Klettern: Schwerkraft aussetzen, Position direkt steuern</h2>
       <p>
-        Solange man klettert, gilt keine Schwerkraft — die Y-Position wird
-        direkt von der Tastatur gesteuert, begrenzt auf die Leiterzone:
+        Solange man sich in der Leiterzone befindet, gilt keine Schwerkraft
+        — unabhängig davon, ob man gerade hoch, runter, oder gar nicht
+        drückt. Das ist wichtig: wer klettert, steht auf einer Sprosse und
+        hält sich an einer anderen fest — er rutscht nicht von selbst
+        herunter, nur weil gerade keine Taste gedrückt wird.
       </p>
-      <pre><code>const wantsClimb = inLadderZone
-  && (keys.up || keys.down)
-  && !keys.left && !keys.right;
+      <pre><code>const inZone = /* Position innerhalb der Leiterzone? */;
+onLadder = inZone && !keys.left && !keys.right;
 
-if (wantsClimb) {
-  vy = 0;
-  y += (keys.up ? -1 : 1) * CLIMB_SPEED * dt;
+if (onLadder) {
+  vy = 0; // Schwerkraft komplett aus, unabhängig von hoch/runter
+  if (keys.up) y -= CLIMB_SPEED * dt;
+  else if (keys.down) y += CLIMB_SPEED * dt;
   y = clamp(y, ladder.top, ladder.bottom);
 } else {
   // normale Bewegung + Schwerkraft
 }</code></pre>
       <p>
-        Wichtig: Klettern greift nur, wenn <strong>ausschließlich</strong>
-        hoch/runter gedrückt wird — sobald links/rechts dazukommt, verlässt
-        man die Leiter sofort, und normale Bewegung/Schwerkraft übernimmt
-        wieder. Kein Gedächtnis über mehrere Frames nötig.
+        Der Unterschied zur ersten Fassung dieses Kapitels: vorher wurde
+        <code>onLadder</code> nur gesetzt, wenn tatsächlich hoch/runter
+        gedrückt wurde — sobald man die Taste losließ (auch mitten in der
+        Leiterzone), griff sofort wieder die Schwerkraft, und man fiel vom
+        Punkt herunter, an dem man gerade "hängen" wollte. Jetzt gilt: die
+        Zugehörigkeit zur Leiterzone allein hebt die Schwerkraft auf;
+        hoch/runter steuern nur, ob und wohin man sich <em>bewegt</em>.
+        Verlassen wird die Leiter ausschließlich durch seitliche Bewegung
+        (links/rechts) — dann übernimmt sofort wieder die normale Physik.
       </p>
 
       <h2>Der echte Bug: eine zu groß berechnete Kollisionszone</h2>

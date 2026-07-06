@@ -125,7 +125,11 @@ const demoAnyone = {
   run() {
     hint.textContent = "Beide Figuren können dasselbe Item einsammeln — wer zuerst ankommt, bekommt es. Mit den Pfeiltasten den Helden steuern, der Gegner bewegt sich automatisch.";
     let item = { x: W / 2, y: 160, collected: false };
-    let heroX = 60, enemyX = W - 90, enemyDir = -1;
+    // Bugfix: der Gegner drehte vorher schon bei W/2+40 um — also VOR
+    // dem Item bei W/2 — und erreichte es dadurch nie. Jetzt patrouilliert
+    // er über einen Bereich, der das Item mit einschließt, sodass ein
+    // echtes Wettrennen entsteht.
+    let heroX = 60, enemyX = W - 60, enemyDir = -1;
     const keys = {};
     const onDown = (e) => { keys[e.code] = true; };
     const onUp = (e) => { keys[e.code] = false; };
@@ -144,9 +148,9 @@ const demoAnyone = {
       if (keys["ArrowRight"]) heroX += 120 * dt;
       heroX = Math.max(20, Math.min(W - 20, heroX));
 
-      enemyX += enemyDir * 60 * dt;
-      if (enemyX < W / 2 + 40) enemyDir = 1;
-      if (enemyX > W - 30) enemyDir = -1;
+      enemyX += enemyDir * 75 * dt;
+      if (enemyX < W / 2 - 60) enemyDir = 1;
+      if (enemyX > W - 40) enemyDir = -1;
 
       // entspricht der Schleife über "alle lebenden Figuren" in PowerUp.update()
       if (!item.collected) {

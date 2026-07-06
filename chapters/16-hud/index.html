@@ -69,6 +69,33 @@
         einen Abstand zu schätzen.
       </p>
 
+      <h2>Horizontal: links, mittig oder rechts ausgerichtet?</h2>
+      <p>
+        Neben der Höhe braucht ein UI-Element wie ein Lebensbalken auch
+        eine horizontale Ausrichtung relativ zu seinem Bezugspunkt
+        <code>x</code>. Drei Möglichkeiten, denselben Balken zu
+        positionieren:
+      </p>
+      <pre><code>// x = linker Rand des Balkens
+left = x;
+// x = rechter Rand des Balkens
+left = x - breite;
+// x = Mitte des Balkens (Ninja Fight)
+left = x - breite / 2;</code></pre>
+      <p>
+        In Ninja Fight steht <code>x</code> für die horizontale
+        <strong>Mitte</strong> der Figur (so wie auch
+        <code>drawNinja()</code> die Figur zentriert um ihre eigene
+        x-Position zeichnet) — deshalb zentriert
+        <code>drawHealthBar()</code> ebenfalls um <code>x</code>
+        (<code>left = x - breite/2</code>). Eine linksbündige oder
+        rechtsbündige Ausrichtung wäre nur dann sinnvoll, wenn
+        <code>x</code> stattdessen eine Kante repräsentieren würde (etwa
+        die linke obere Ecke einer Plattform-Kachel, wie in Kapitel 7).
+        Welche Ausrichtung passt, hängt also davon ab, wofür der
+        Bezugspunkt <code>x</code> im jeweiligen Kontext tatsächlich steht.
+      </p>
+
       <h2>HUD-Text: dieselben Werte, jeden Frame aktuell</h2>
       <p>
         Level, Lebenspunkte, Punktestand, verbleibende Zeit — vier einfache
@@ -106,6 +133,10 @@
       </div>
       <div id="position-controls">
         <label>Abstand vom Fußpunkt <input type="range" id="offset-slider" min="10" max="90" value="40"></label>
+        <span style="margin-left:14px;">Ausrichtung:</span>
+        <button class="btn ghost" data-align="left">links</button>
+        <button class="btn ghost btn-active" data-align="center">mittig</button>
+        <button class="btn ghost" data-align="right">rechts</button>
       </div>
       <div id="hud-demo">
         <span id="hud-points">Punkte: 0</span>

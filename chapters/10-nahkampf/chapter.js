@@ -120,7 +120,10 @@ const demoDamage = {
   run() {
     hint.textContent = "Drei Angriffsarten, drei Reichweiten, drei Schadenswerte — dieselbe Trefferzone-Logik, nur mit anderen Zahlen.";
     hpDisplay.style.display = "block";
-    let enemyX = W / 2 + 70, enemyHp = 30, attackTimer = 0, attackHitDone = false, currentAttack = null;
+    // Abstand bewusst klein genug gewählt, dass ALLE drei Angriffsarten
+    // (auch der kürzeste, Schlag mit Reichweite 30) tatsächlich treffen —
+    // sonst ließe sich der unterschiedliche Schaden gar nicht beobachten
+    let enemyX = W / 2 + 20, enemyHp = 30, attackTimer = 0, attackHitDone = false, currentAttack = null;
     const heroX = W / 2 - 20;
 
     function attack(type) {

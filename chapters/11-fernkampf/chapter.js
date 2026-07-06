@@ -29,6 +29,12 @@ function drawChar(sheet, row, x, y, facing = 1) {
 function drawShuriken(x, y, spin) {
   const sx = (42 - 21) / 2, sy = 7 * 66 + (66 - 21) / 2;
   ctx.save(); ctx.translate(x, y); ctx.rotate(spin);
+  // Das Original-Sprite ist dunkel eingefärbt (passend zum hellen
+  // Wald-Hintergrund in Ninja Fight) — vor UNSEREM dunklen Tutorial-
+  // Canvas wäre es fast unsichtbar. Ein heller Kreis dahinter sorgt für
+  // Kontrast, ohne die Original-Grafik selbst zu verändern.
+  ctx.fillStyle = "rgba(230,236,240,0.9)";
+  ctx.beginPath(); ctx.arc(0, 0, 11, 0, Math.PI * 2); ctx.fill();
   ctx.drawImage(tileSheet, sx, sy, 21, 21, -10, -10, 21, 21);
   ctx.restore();
 }

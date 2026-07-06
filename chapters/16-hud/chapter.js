@@ -18,14 +18,23 @@ function whenReady(fn) { if (enemySheet.complete && enemySheet.naturalWidth > 0)
 function drawEnemy(x, y) { ctx.drawImage(enemySheet, 0, 0, 160, 150, x - 30, y - 62, 60, 62); }
 function clearStage() { ctx.fillStyle = "#0b1a24"; ctx.fillRect(0, 0, W, H); }
 
-// entspricht drawHealthBar() aus render.js
-function drawHealthBar(x, y, hp, maxHp) {
+// entspricht drawHealthBar() aus render.js — jetzt mit einstellbarer
+// horizontaler Ausrichtung, um links/mittig/rechts zu vergleichen
+function drawHealthBar(x, y, hp, maxHp, align = "center") {
   const w = 40, h = 5;
   const pct = Math.max(0, hp / maxHp);
-  ctx.fillStyle = "rgba(5,7,10,0.7)"; ctx.fillRect(x - w / 2 - 1, y - 1, w + 2, h + 2);
-  ctx.fillStyle = "#3a1010"; ctx.fillRect(x - w / 2, y, w, h);
+  let left;
+  if (align === "left") left = x;
+  else if (align === "right") left = x - w;
+  else left = x - w / 2; // "center" — Standard in Ninja Fight, da x der horizontalen Mitte der Figur entspricht
+  ctx.fillStyle = "rgba(5,7,10,0.7)"; ctx.fillRect(left - 1, y - 1, w + 2, h + 2);
+  ctx.fillStyle = "#3a1010"; ctx.fillRect(left, y, w, h);
   ctx.fillStyle = pct > 0.5 ? "#5fe07a" : pct > 0.25 ? "#ffb84d" : "#ff5555";
-  ctx.fillRect(x - w / 2, y, w * pct, h);
+  ctx.fillRect(left, y, w * pct, h);
+  // Referenzlinie: markiert x selbst, damit die Ausrichtung relativ zum
+  // Bezugspunkt sichtbar wird
+  ctx.strokeStyle = "rgba(255,255,255,0.35)"; ctx.beginPath();
+  ctx.moveTo(x, y - 6); ctx.lineTo(x, y + h + 4); ctx.stroke();
 }
 
 /* ================================================================== */
@@ -36,19 +45,27 @@ function drawHealthBar(x, y, hp, maxHp) {
 /* ================================================================== */
 const demoPosition = {
   run() {
-    hint.textContent = "Regler bewegt den Balken vertikal — bei zu kleinem Abstand sitzt er im Kopf, nicht darüber.";
-    let offset = 40;
+    hint.textContent = "Regler bewegt den Balken vertikal; die Buttons verändern die horizontale Ausrichtung relativ zur weißen Referenzlinie (= x-Position der Figur).";
+    let offset = 40, align = "center";
     const slider = document.getElementById("offset-slider");
     slider.oninput = () => { offset = Number(slider.value); draw(); };
+    document.querySelectorAll("[data-align]").forEach(b => {
+      b.addEventListener("click", () => {
+        align = b.dataset.align;
+        document.querySelectorAll("[data-align]").forEach(x => x.classList.remove("btn-active"));
+        b.classList.add("btn-active");
+        draw();
+      });
+    });
     document.getElementById("position-controls").style.display = "flex";
 
     function draw() {
       clearStage();
       whenReady(() => drawEnemy(W / 2, 150));
-      drawHealthBar(W / 2, 150 - offset, 6, 10);
+      drawHealthBar(W / 2, 150 - offset, 6, 10, align);
       ctx.fillStyle = offset < 61 ? "#ff6b6b" : "#5fe0c9";
       ctx.font = "13px 'JetBrains Mono'";
-      ctx.fillText(`Abstand: ${offset}px  ${offset < 61 ? "(im Kopf!)" : "(richtig, über dem Kopf)"}`, 14, 24);
+      ctx.fillText(`Abstand: ${offset}px  ${offset < 61 ? "(im Kopf!)" : "(richtig, über dem Kopf)"}  ·  Ausrichtung: ${align}`, 14, 24);
     }
     whenReady(draw); draw();
     return () => { slider.oninput = null; document.getElementById("position-controls").style.display = "none"; };
