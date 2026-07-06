@@ -10,7 +10,7 @@ Kursmaterial bzw. Buch Übung für Übung portiert haben) geht dieses Repo
 **vom fertigen Ergebnis aus** und zerlegt es in eine sinnvolle Lernreihenfolge
 — jedes Kapitel ein Baustein, den man tatsächlich im Endprodukt wiederfindet.
 
-▶ **[Alle Kapitel ansehen](./index.html)**
+▶ **[Alle Kapitel ansehen](./index.html)** — 🎉 **alle 18 Kapitel sind vollständig.**
 
 ## Der Lernpfad
 

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kapitel 18 · Highscores & Levelfortschritt — Ninja Fight von Grund auf</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/css/site.css">
+<link rel="stylesheet" href="chapter.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap">
+    <div class="brand"><span class="dot">&gt;</span> ninja-fight-tutorial <small>HTML5 + Vanilla JS</small></div>
+    <nav class="site-nav">
+      <a href="../../index.html">Alle Kapitel</a>
+      <a href="https://github.com/Michdo93" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<section class="chapter-hero">
+  <div class="wrap">
+    <div class="breadcrumb"><a href="../../index.html">Kapitel</a> / Kapitel 18</div>
+    <span class="readout">KAP·18</span>
+    <h1>Highscores & Levelfortschritt</h1>
+    <p class="lede" style="color:var(--text-dim); max-width:70ch;">
+      Das letzte Kapitel: Ergebnisse dauerhaft speichern, die Bedingungen
+      für Sieg und Niederlage — und wie alle 17 vorigen Kapitel zusammen
+      ein vollständiges Spiel ergeben.
+    </p>
+  </div>
+</section>
+
+<main class="wrap">
+  <div class="learn-grid">
+
+    <div class="learn-col">
+      <h2>Highscores, die einen Seitenneuladen überstehen</h2>
+      <p>
+        <code>localStorage</code> speichert Text-Daten dauerhaft im
+        Browser — auch nach dem Schließen des Tabs. Für eine Highscore-
+        Liste reicht ein Array aus Objekten, als JSON gespeichert:
+      </p>
+      <pre><code>function saveHighscore(name, points, level) {
+  const list = JSON.parse(
+    localStorage.getItem("highscores") || "[]");
+  list.push({ name, points, level });
+  list.sort((a, b) => b.points - a.points);
+  localStorage.setItem("highscores",
+    JSON.stringify(list.slice(0, 10))); // nur Top 10 behalten
+}</code></pre>
+      <p>
+        Ninja Fight ersetzt damit den ursprünglichen PHP-Server des
+        Originalspiels — GitHub Pages kann kein PHP ausführen,
+        <code>localStorage</code> braucht dafür aber auch gar keinen
+        Server.
+      </p>
+
+      <h2>Sieg oder Niederlage — mehr als nur "tot oder nicht"</h2>
+      <p>
+        Ein Spieldurchlauf endet nicht nur durch Sterben. In Ninja Fight
+        gibt es mehrere Wege zur Niederlage und genau einen Weg zum Sieg:
+      </p>
+      <pre><code>if (!heldLebt) return "Niederlage: gestorben";
+if (zeitAbgelaufen && gegnerÜbrig > 0)
+  return "Niederlage: Zeit abgelaufen, Gegner übrig";
+if (levelNum >= maxLevel)
+  return "Sieg: alle Level geschafft";
+return "Spiel läuft weiter";</code></pre>
+      <p>
+        Wichtig: "Zeit abgelaufen" allein ist <em>keine</em> Niederlage —
+        nur in Kombination mit noch lebenden Gegnern. Ohne Gegner ist ein
+        Zeitablauf einfach der normale Übergang zum nächsten Level.
+      </p>
+
+      <h2>Alles zusammen: kumulative Lebenspunkte</h2>
+      <p>
+        Ein schönes Beispiel dafür, wie mehrere frühere Kapitel
+        zusammenspielen: Level-Fortschritt (dieses Kapitel), Schaden
+        (Kapitel 10), und der Game-State selbst ergeben zusammen die
+        Formel, die in <code>GameManager.nextLevel()</code> steht:
+      </p>
+      <pre><code>this.lifeEnergy += 10 * this.levelNum;
+// NICHT: this.lifeEnergy = 10 * this.levelNum;</code></pre>
+      <p>
+        Der Unterschied zwischen <code>+=</code> und <code>=</code> ist
+        hier alles: mit <code>=</code> würde jeder Levelaufstieg die
+        Lebenspunkte komplett zurücksetzen (verlorene HP aus dem letzten
+        Level wären egal) — mit <code>+=</code> zählt der Fortschritt
+        über das gesamte Spiel hinweg.
+      </p>
+
+      <div class="callout">
+        Das war's — alle 18 Kapitel zusammen ergeben ein vollständiges,
+        spielbares Ninja-Fight-Spiel. Schau dir jetzt gerne das fertige
+        Repo <code>NinjaFight</code> an und vergleiche es mit dem, was du
+        hier Schritt für Schritt gebaut hast.
+      </div>
+    </div>
+
+    <div class="stage-wrap">
+      <div class="demo-buttons">
+        <button class="btn ghost btn-active" data-demo="storage">1 · Highscores</button>
+        <button class="btn ghost" data-demo="winlose">2 · Sieg oder Niederlage?</button>
+        <button class="btn ghost" data-demo="together">3 · Alles zusammen</button>
+      </div>
+      <p id="hint" class="controls-hint"></p>
+
+      <div id="panel-storage" class="panel">
+        <div class="panel-row">
+          <input type="text" id="score-name" placeholder="Name">
+          <button id="btn-save-score" class="btn ghost">Zufallsergebnis speichern</button>
+          <button id="btn-clear-scores" class="btn ghost">Liste leeren</button>
+        </div>
+        <div id="highscore-list"></div>
+      </div>
+
+      <div id="panel-winlose" class="panel">
+        <div class="panel-row">
+          <label>Level <input type="range" id="sim-level" min="1" max="10" value="5"></label>
+          <label><input type="checkbox" id="sim-alive" checked> Held lebt</label>
+        </div>
+        <div class="panel-row">
+          <label>Gegner übrig <input type="range" id="sim-enemies" min="0" max="5" value="0"></label>
+          <label><input type="checkbox" id="sim-timeup"> Zeit abgelaufen</label>
+        </div>
+        <p id="outcome-display"></p>
+      </div>
+
+      <div id="panel-together" class="panel">
+        <div id="life-controls">
+          <button id="btn-next-level" class="btn ghost">Nächstes Level</button>
+          <button id="btn-take-damage" class="btn ghost">Schaden nehmen (-7)</button>
+        </div>
+        <div id="life-log"></div>
+      </div>
+
+      <div class="stage-caption">
+        <span>18-highscores-fortschritt/chapter.js</span>
+        <span>localStorage + Spielzustand</span>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<div class="chapter-footer-nav wrap">
+  <a href="../17-menues-zustaende/">← Kapitel 17 · Menüs & Spielzustände</a>
+  <a href="../../index.html">Zur Kapitelübersicht →</a>
+</div>
+
+<script src="chapter.js"></script>
+</body>
+</html>

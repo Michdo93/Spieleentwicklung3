@@ -1,0 +1,57 @@
+.demo-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.demo-buttons .btn.ghost.btn-active {
+  border-color: var(--amber);
+  color: var(--amber);
+}
+#hint { margin-bottom: 14px; }
+
+.panel {
+  display: none;
+  background: var(--bg-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 20px;
+}
+.panel-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+.panel-row input[type="text"] {
+  background: #05070a;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--text);
+  padding: 6px 10px;
+  font-family: var(--font-mono);
+}
+#highscore-list, #life-log {
+  background: #05070a;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--teal);
+  white-space: pre-wrap;
+  min-height: 60px;
+  max-height: 180px;
+  overflow-y: auto;
+}
+#outcome-display {
+  margin-top: 12px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+#life-controls { display: none; gap: 8px; margin-bottom: 10px; }

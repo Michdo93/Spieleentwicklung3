@@ -63,7 +63,7 @@ const CHAPTERS = [
     status: "live" },
   { num: 18, slug: "18-highscores-fortschritt", title: "Highscores & Levelfortschritt",
     desc: "Speichern mit localStorage, Sieg-/Niederlage-Bedingungen, alles zu einem vollständigen Spiel zusammenfügen.",
-    status: "planned" },
+    status: "live" },
 ];
 
 if (typeof module !== "undefined") module.exports = { CHAPTERS };
