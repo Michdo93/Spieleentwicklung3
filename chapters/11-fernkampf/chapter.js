@@ -96,9 +96,13 @@ class Projectile {
 
 const demoProjectile = {
   run() {
-    hint.textContent = "Jetzt existiert ein echtes Objekt: eigene Position, eigene Geschwindigkeit, eigenes update() — unabhängig von der Figur, die geworfen hat.";
+    hint.textContent = "Jetzt existiert ein echtes Objekt UND die Wurfanimation läuft gleichzeitig — beides zusammen macht den vollständigen Wurf aus.";
     let projectiles = [];
-    document.getElementById("btn-throw2").onclick = () => projectiles.push(new Projectile(W / 2 - 40, 130, 1));
+    let throwing = false, throwT = 0;
+    document.getElementById("btn-throw2").onclick = () => {
+      projectiles.push(new Projectile(W / 2 - 40, 130, 1));
+      throwing = true; throwT = 0;
+    };
     document.getElementById("throw-controls2").style.display = "flex";
 
     let raf, lastTime = 0;
@@ -106,12 +110,13 @@ const demoProjectile = {
       if (lastTime === 0) lastTime = now;
       const dt = Math.min((now - lastTime) / 1000, 0.05);
       lastTime = now;
+      if (throwing) { throwT += dt; if (throwT > 0.5) throwing = false; }
 
       projectiles.forEach(p => p.update(dt));
       projectiles = projectiles.filter(p => !p.dead);
 
       clearStage();
-      whenReady(() => { drawChar(heroSheet, 0, W / 2 - 60, 150, 1); });
+      whenReady(() => { drawChar(heroSheet, throwing ? 5 : 0, W / 2 - 60, 150, 1); });
       projectiles.forEach(p => drawShuriken(p.x, p.y, p.spin));
       ctx.fillStyle = "#5b6b7d"; ctx.font = "13px 'JetBrains Mono'";
       ctx.fillText(`aktive Projektile: ${projectiles.length}`, 20, 30);
@@ -135,7 +140,11 @@ const demoCollision = {
     // 100 HP zu Testzwecken, damit man beliebig oft werfen kann
     const enemy = { x: W / 2 + 90, y: 150, hp: 100 };
     let projectiles = [];
-    document.getElementById("btn-throw3").onclick = () => projectiles.push(new Projectile(W / 2 - 40, 130, 1));
+    let throwing = false, throwT = 0;
+    document.getElementById("btn-throw3").onclick = () => {
+      projectiles.push(new Projectile(W / 2 - 40, 130, 1));
+      throwing = true; throwT = 0;
+    };
     document.getElementById("throw-controls3").style.display = "flex";
     document.getElementById("reset-btn3").onclick = () => { enemy.hp = 100; };
 
@@ -148,6 +157,7 @@ const demoCollision = {
       if (lastTime === 0) lastTime = now;
       const dt = Math.min((now - lastTime) / 1000, 0.05);
       lastTime = now;
+      if (throwing) { throwT += dt; if (throwT > 0.5) throwing = false; }
 
       const hb = hurtboxAt();
       projectiles.forEach(p => {
@@ -160,7 +170,7 @@ const demoCollision = {
 
       clearStage();
       whenReady(() => {
-        drawChar(heroSheet, 0, W / 2 - 60, 150, 1);
+        drawChar(heroSheet, throwing ? 5 : 0, W / 2 - 60, 150, 1);
         if (enemy.hp > 0) drawChar(enemySheet, 0, enemy.x, enemy.y, -1);
       });
       if (enemy.hp > 0) {
