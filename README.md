@@ -1,7 +1,7 @@
 # Ninja Fight von Grund auf — Ein Spiel-Tutorial
 
 Dieses Repo baut, **Kapitel für Kapitel**, exakt die Technik auf, die im
-fertigen [Ninja-Fight-Spiel](https://github.com/Michdo93) zum Einsatz kommt
+fertigen [Ninja-Fight-Spiel](https://michdo93.github.io/NinjaFight/) zum Einsatz kommt
 — vom leeren `<canvas>` bis zum vollständigen 2D-Plattform-Kampfspiel mit
 Sprite-Animation, Gegner-KI, Levels, Sound, Menüs und Highscores.
 

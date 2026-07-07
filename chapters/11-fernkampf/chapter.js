@@ -22,8 +22,11 @@ function whenReady(fn) {
   if (ready()) fn(); else [heroSheet, enemySheet, tileSheet].forEach(i => i.addEventListener("load", () => ready() && fn()));
 }
 function drawChar(sheet, row, x, y, facing = 1) {
+  // Bugfix: auf den echten Sprite-Anker zentrieren (siehe Kapitel 10),
+  // sonst landet die sichtbare Figur neben x und Kollisionsprüfungen
+  // gegen x passen nicht zur tatsächlich gezeichneten Position.
   ctx.save(); ctx.translate(x, y); ctx.scale(facing, 1);
-  ctx.drawImage(sheet, 0, row * CELL_H, CELL_W, CELL_H, -34, -70, 68, 70);
+  ctx.drawImage(sheet, 0, row * CELL_H, CELL_W, CELL_H, -12.75, -61.625, 68, 63.75);
   ctx.restore();
 }
 function drawShuriken(x, y, spin) {
@@ -128,12 +131,17 @@ const demoProjectile = {
 /* ================================================================== */
 const demoCollision = {
   run() {
-    hint.textContent = "Das Projektil trifft jeden außer seinen eigenen Werfer — wichtig, sobald mehrere Figuren gleichzeitig werfen können.";
-    const enemy = { x: W / 2 + 90, y: 150, hp: 5 };
+    hint.textContent = "Das Projektil trifft jeden außer seinen eigenen Werfer — die gestrichelte Kreisfläche markiert die tatsächliche Trefferzone des Gegners.";
+    // 100 HP zu Testzwecken, damit man beliebig oft werfen kann
+    const enemy = { x: W / 2 + 90, y: 150, hp: 100 };
     let projectiles = [];
     document.getElementById("btn-throw3").onclick = () => projectiles.push(new Projectile(W / 2 - 40, 130, 1));
     document.getElementById("throw-controls3").style.display = "flex";
-    document.getElementById("reset-btn3").onclick = () => { enemy.hp = 5; };
+    document.getElementById("reset-btn3").onclick = () => { enemy.hp = 100; };
+
+    // Trefferpunkt/-radius des Gegners — jetzt korrekt auf den (nach dem
+    // Anker-Bugfix) tatsächlich sichtbaren Charakter ausgerichtet
+    const hurtboxAt = () => ({ x: enemy.x, y: enemy.y - 30, r: 20 });
 
     let raf, lastTime = 0;
     const loop = (now) => {
@@ -141,9 +149,10 @@ const demoCollision = {
       const dt = Math.min((now - lastTime) / 1000, 0.05);
       lastTime = now;
 
+      const hb = hurtboxAt();
       projectiles.forEach(p => {
         p.update(dt);
-        if (!p.dead && enemy.hp > 0 && Math.hypot(enemy.x - p.x, enemy.y - 20 - p.y) < 22) {
+        if (!p.dead && enemy.hp > 0 && Math.hypot(hb.x - p.x, hb.y - p.y) < hb.r) {
           enemy.hp -= 1; p.dead = true;
         }
       });
@@ -154,9 +163,14 @@ const demoCollision = {
         drawChar(heroSheet, 0, W / 2 - 60, 150, 1);
         if (enemy.hp > 0) drawChar(enemySheet, 0, enemy.x, enemy.y, -1);
       });
+      if (enemy.hp > 0) {
+        ctx.strokeStyle = "#5fb0ff"; ctx.lineWidth = 2; ctx.setLineDash([4, 3]);
+        ctx.beginPath(); ctx.arc(hb.x, hb.y, hb.r, 0, Math.PI * 2); ctx.stroke();
+        ctx.setLineDash([]);
+      }
       projectiles.forEach(p => drawShuriken(p.x, p.y, p.spin));
       ctx.fillStyle = "#5b6b7d"; ctx.font = "13px 'JetBrains Mono'";
-      ctx.fillText(`Gegner-HP: ${enemy.hp}/5`, 20, 30);
+      ctx.fillText(`Gegner-HP: ${enemy.hp}/100`, 20, 30);
 
       raf = requestAnimationFrame(loop);
     };

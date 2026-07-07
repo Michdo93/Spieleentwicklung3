@@ -29,8 +29,12 @@ function drawTile(name, x, y, scale = 1) {
   ctx.drawImage(tileSheet, sx, sy, def.w, def.h, x, y, def.w * scale, def.h * scale);
 }
 function drawChar(sheet, x, y, facing = 1) {
+  // Bugfix: auf den echten Sprite-Anker zentrieren (siehe Kapitel 10) —
+  // vorher landete die sichtbare Figur neben x, wodurch die Kollisions-
+  // prüfung schon auf der unsichtbaren Fläche des Sprites auslöste,
+  // bevor die gezeichnete Figur das Item optisch erreicht hatte.
   ctx.save(); ctx.translate(x, y); ctx.scale(facing, 1);
-  ctx.drawImage(sheet, 0, 0, 160, 150, -30, -62, 60, 62);
+  ctx.drawImage(sheet, 0, 0, 160, 150, -11.25, -54.375, 60, 56.25);
   ctx.restore();
 }
 function clearStage() { ctx.fillStyle = "#0b1a24"; ctx.fillRect(0, 0, W, H); }
@@ -87,7 +91,7 @@ const demoEffects = {
   run() {
     hint.textContent = "Herz: sofortiger Effekt. Schwert: läuft nach 30 Sekunden automatisch ab. Shuriken: hat eine begrenzte Anzahl Verwendungen.";
     statusEl.style.display = "block";
-    let hp = 8, hasSword = false, swordTimer = 0, shurikenCount = 0;
+    let hp = 5, hasSword = false, swordTimer = 0, shurikenCount = 0;
 
     function collect(type) {
       if (type === "Heart") hp = Math.min(10, hp + 2); // sofort, keine Nachwirkung
@@ -124,18 +128,18 @@ const demoEffects = {
 const demoAnyone = {
   run() {
     hint.textContent = "Beide Figuren können dasselbe Item einsammeln — wer zuerst ankommt, bekommt es. Mit den Pfeiltasten den Helden steuern, der Gegner bewegt sich automatisch.";
-    let item = { x: W / 2, y: 160, collected: false };
-    // Bugfix: der Gegner drehte vorher schon bei W/2+40 um — also VOR
-    // dem Item bei W/2 — und erreichte es dadurch nie. Jetzt patrouilliert
-    // er über einen Bereich, der das Item mit einschließt, sodass ein
-    // echtes Wettrennen entsteht.
+    // Item jetzt auf derselben Bodenhöhe wie die Figuren (y=200) statt
+    // schwebend darüber — vorher stand es optisch deutlich höher als die
+    // Figuren, wodurch der x-Abstands-Trefftest nicht zur sichtbaren
+    // Position passte
+    let item = { x: W / 2, y: 200, collected: false };
     let heroX = 60, enemyX = W - 60, enemyDir = -1;
     const keys = {};
     const onDown = (e) => { keys[e.code] = true; };
     const onUp = (e) => { keys[e.code] = false; };
     window.addEventListener("keydown", onDown);
     window.addEventListener("keyup", onUp);
-    document.getElementById("reset-item-btn").onclick = () => { item = { x: W / 2, y: 160, collected: false }; };
+    document.getElementById("reset-item-btn").onclick = () => { item = { x: W / 2, y: 200, collected: false }; };
     document.getElementById("anyone-controls").style.display = "flex";
 
     let raf, lastTime = 0;
@@ -162,7 +166,9 @@ const demoAnyone = {
       whenReady(() => {
         drawChar(heroSheet, heroX, 200, 1);
         drawChar(enemySheet, enemyX, 200, -1);
-        if (!item.collected) drawTile("Sword", item.x - 8, item.y - 65, 0.7);
+        // Schwert steht jetzt aufrecht AUF dem Boden (Unterkante bei
+        // y=200), statt hoch in der Luft zu schweben
+        if (!item.collected) drawTile("Sword", item.x - 6, item.y - 46, 0.7);
       });
       ctx.fillStyle = "#5b6b7d"; ctx.font = "13px 'JetBrains Mono'";
       ctx.fillText(item.collected ? `Eingesammelt von: ${item.by}` : "Item liegt bereit", 14, 24);

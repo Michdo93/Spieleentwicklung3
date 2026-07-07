@@ -22,8 +22,13 @@ function whenReady(fn) {
   if (ready()) fn(); else { heroSheet.addEventListener("load", () => ready() && fn()); enemySheet.addEventListener("load", () => ready() && fn()); }
 }
 function drawFrame(sheet, row, x, y, facing = 1) {
+  // Bugfix: der sichtbare Charakter sitzt NICHT mittig in der 160×150-
+  // Zelle (er beginnt schon bei nativ x≈6-54 von 160) — vorher wurde die
+  // ganze Zelle zentriert, wodurch die sichtbare Figur deutlich neben x
+  // landete und Hitboxen/Trefferzonen nicht mehr zu ihr passten. Jetzt
+  // wird auf den echten Anker (30, 145 aus CHARACTER_SHEET) zentriert.
   ctx.save(); ctx.translate(x, y); ctx.scale(facing, 1);
-  ctx.drawImage(sheet, 0, row * CELL_H, CELL_W, CELL_H, -34, -70, 68, 70);
+  ctx.drawImage(sheet, 0, row * CELL_H, CELL_W, CELL_H, -12.75, -61.625, 68, 63.75);
   ctx.restore();
 }
 function clearStage() { ctx.fillStyle = "#0b1a24"; ctx.fillRect(0, 0, W, H); }
@@ -118,23 +123,30 @@ const RANGE = { Hit: 30, Kick: 34, Sword: 46 };
 
 const demoDamage = {
   run() {
-    hint.textContent = "Drei Angriffsarten, drei Reichweiten, drei Schadenswerte — dieselbe Trefferzone-Logik, nur mit anderen Zahlen.";
+    hint.textContent = "Jede Angriffsart bewegt den Gegner auf eine für sie passende Distanz — so wird auch die unterschiedliche Reichweite sichtbar, nicht nur der Schaden.";
     hpDisplay.style.display = "block";
-    // Abstand bewusst klein genug gewählt, dass ALLE drei Angriffsarten
-    // (auch der kürzeste, Schlag mit Reichweite 30) tatsächlich treffen —
-    // sonst ließe sich der unterschiedliche Schaden gar nicht beobachten
-    let enemyX = W / 2 + 20, enemyHp = 30, attackTimer = 0, attackHitDone = false, currentAttack = null;
+    // 500 HP, weil es eine Demo ist: der Gegner wehrt sich nicht, daher
+    // kann man beliebig oft angreifen, ohne dass er "vorzeitig" stirbt
+    let enemyX = W / 2 + 20, enemyHp = 500, attackTimer = 0, attackHitDone = false, currentAttack = null;
     const heroX = W / 2 - 20;
+    // je näher die Reichweite, desto näher steht der Gegner — dadurch
+    // sieht man live, dass Schwert von deutlich weiter weg trifft als Schlag
+    const GAP_FOR = { Hit: 15, Kick: 25, Sword: 38 };
 
     function attack(type) {
       if (attackTimer > 0) return;
       currentAttack = type; attackTimer = 0.3; attackHitDone = false;
+      enemyX = heroX + GAP_FOR[type];
     }
     ["Hit", "Kick", "Sword"].forEach(type => {
       document.getElementById("btn-" + type.toLowerCase()).addEventListener("click", () => attack(type));
     });
     document.getElementById("damage-controls").style.display = "flex";
-    document.getElementById("reset-btn").addEventListener("click", () => { enemyHp = 30; });
+    document.getElementById("reset-btn").addEventListener("click", () => { enemyHp = 500; });
+
+    // Trefferbox des Gegners — an den korrigierten Sprite-Anker angepasst,
+    // damit sie tatsächlich mit der sichtbaren Figur übereinstimmt
+    function enemyHurtbox() { return rectOf(enemyX - 13, 150 - 58, 26, 58); }
 
     let lastTime = 0, raf;
     const loop = (now) => {
@@ -147,8 +159,7 @@ const demoDamage = {
         if (!attackHitDone) {
           const range = RANGE[currentAttack];
           const hitBox = rectOf(heroX, 150 - 40, range, 30);
-          const enemyBox = rectOf(enemyX - 20, 150 - 60, 40, 60);
-          if (overlaps(hitBox, enemyBox)) { enemyHp = Math.max(0, enemyHp - DAMAGE[currentAttack]); attackHitDone = true; }
+          if (overlaps(hitBox, enemyHurtbox())) { enemyHp = Math.max(0, enemyHp - DAMAGE[currentAttack]); attackHitDone = true; }
         }
       }
 
@@ -157,13 +168,19 @@ const demoDamage = {
         drawFrame(heroSheet, 0, heroX, 150, 1);
         if (enemyHp > 0) drawFrame(enemySheet, 0, enemyX, 150, -1);
       });
+      // Trefferzone des Angriffs (rot) UND Trefferbox des Gegners (blau) —
+      // beide sichtbar, damit die Überlappung nachvollziehbar ist
+      const eb = enemyHurtbox();
+      ctx.strokeStyle = "#5fb0ff"; ctx.lineWidth = 2; ctx.setLineDash([4, 3]);
+      ctx.strokeRect(eb.left, eb.top, eb.right - eb.left, eb.bottom - eb.top);
+      ctx.setLineDash([]);
       if (attackTimer > 0) {
         const range = RANGE[currentAttack];
         ctx.strokeStyle = "#ff6b6b"; ctx.lineWidth = 2; ctx.setLineDash([5, 4]);
         ctx.strokeRect(heroX, 150 - 40, range, 30);
         ctx.setLineDash([]);
       }
-      hpDisplay.textContent = `Gegner-HP: ${enemyHp}/30   letzter Angriff: ${currentAttack || "–"}`;
+      hpDisplay.textContent = `Gegner-HP: ${enemyHp}/500   letzter Angriff: ${currentAttack || "–"}   Abstand: ${(enemyX - heroX).toFixed(0)}px`;
 
       raf = requestAnimationFrame(loop);
     };
